@@ -1,0 +1,661 @@
+{%- comment -%}
+  Shop by Categories — premium Leszly-style slider.
+{%- endcomment -%}
+
+{% liquid
+  comment
+    Locale strings win so the heading follows the active language; the section
+    settings are only a fallback. `t` output is already escaped, so the
+    fallbacks are escaped at assign time and never escaped again on output.
+  endcomment
+  assign title = 'comforsh.categories.title' | t
+  assign subtitle = 'comforsh.categories.subtitle' | t
+
+  if title == 'comforsh.categories.title' or title contains 'Translation missing'
+    assign title = section.settings.title | escape
+  endif
+  if subtitle == 'comforsh.categories.subtitle' or subtitle contains 'Translation missing'
+    assign subtitle = section.settings.subtitle | escape
+  endif
+%}
+
+<section
+  class="cfp-cats"
+  id="ComforshCats-{{ section.id }}"
+  style="
+    --cfp-cats-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-cats-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-cats__inner">
+    {% if title != blank or subtitle != blank %}
+      <header class="cfp-cats__header" data-cf-reveal="up">
+        {% if title != blank %}
+          <h2 class="cfp-cats__title">{{ title }}</h2>
+        {% endif %}
+        {% if subtitle != blank %}
+          <p class="cfp-cats__sub">{{ subtitle }}</p>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <div class="cfp-cats__stage">
+        <button
+          type="button"
+          class="cfp-cats__nav cfp-cats__nav--prev"
+          aria-label="{{ section.settings.prev_label | default: 'Previous' | escape }}"
+          data-cats-prev
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+
+        <div class="cfp-cats__viewport" data-cats-viewport>
+          <div class="cfp-cats__track" data-cats-track>
+            {% for block in section.blocks %}
+              {% liquid
+                assign card_title = block.settings.title
+                assign card_image = block.settings.image
+                assign card_link = block.settings.link
+                assign collection = block.settings.collection
+                if collection != blank
+                  assign card_link = collection.url
+                  if card_title == blank
+                    assign card_title = collection.title
+                  endif
+                  if card_image == blank and collection.featured_image != blank
+                    assign card_image = collection.featured_image
+                  endif
+                endif
+              %}
+              <a
+                href="{{ card_link | default: routes.all_products_collection_url }}"
+                class="cfp-cats__card"
+                data-cf-reveal="up"
+                {{ block.shopify_attributes }}
+              >
+                <div class="cfp-cats__media">
+                  {% if card_image != blank %}
+                    {{
+                      card_image
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '320, 480, 640, 800',
+                        sizes: '(min-width: 990px) 22vw, (min-width: 750px) 40vw, 70vw',
+                        alt: card_title,
+                        class: 'cfp-cats__img'
+                    }}
+                  {% else %}
+                    {{ 'product-1' | placeholder_svg_tag: 'cfp-cats__img cfp-cats__img--placeholder' }}
+                  {% endif %}
+                </div>
+                <span class="cfp-cats__label">
+                  <span class="cfp-cats__name">{{ card_title | default: 'Shop' | escape }}</span>
+                  <span class="cfp-cats__arrow" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                      <path d="M5 12h14M13 6l6 6-6 6"/>
+                    </svg>
+                  </span>
+                </span>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="cfp-cats__nav cfp-cats__nav--next"
+          aria-label="{{ section.settings.next_label | default: 'Next' | escape }}"
+          data-cats-next
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="cfp-cats__dots" data-cats-dots aria-hidden="true"></div>
+    {% endif %}
+
+    {% if section.settings.show_view_all and section.settings.view_all_label != blank %}
+      <div class="cfp-cats__cta">
+        <a
+          class="cfp-cats__view-all"
+          href="{{ section.settings.view_all_link | default: routes.all_products_collection_url }}"
+        >
+          {{ section.settings.view_all_label | escape }}
+          <span class="cfp-cats__view-all-arrow" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </span>
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('ComforshCats-{{ section.id }}');
+    if (!root) return;
+
+    var viewport = root.querySelector('[data-cats-viewport]');
+    var track = root.querySelector('[data-cats-track]');
+    var dotsWrap = root.querySelector('[data-cats-dots]');
+    var cards = Array.prototype.slice.call(root.querySelectorAll('.cfp-cats__card'));
+    if (!viewport || !track || !cards.length) return;
+
+    if (root._cfpCatsCleanup) root._cfpCatsCleanup();
+
+    var prev = root.querySelector('[data-cats-prev]');
+    var next = root.querySelector('[data-cats-next]');
+    var autoplay = {{ section.settings.autoplay | json }};
+    var autoplaySpeed = Math.max(2, Number({{ section.settings.autoplay_speed | default: 4 }}) || 4) * 1000;
+    var index = 0;
+    var timer = null;
+    var gap = 20;
+
+    function cols() {
+      var w = window.innerWidth || 1200;
+      var setting = Number({{ section.settings.columns_desktop | default: 4 }}) || 4;
+      if (w >= 990) return Math.min(setting, cards.length);
+      if (w >= 750) return Math.min(3, cards.length);
+      return Math.min(2, cards.length);
+    }
+
+    function maxIndex() {
+      return Math.max(0, cards.length - cols());
+    }
+
+    function metrics() {
+      var size = cols();
+      var vpW = viewport.clientWidth;
+      if (vpW < 40) vpW = root.clientWidth || 320;
+      var styles = window.getComputedStyle(track);
+      var g = parseFloat(styles.columnGap || styles.gap) || gap;
+      gap = g;
+      var cardW = (vpW - g * (size - 1)) / size;
+      return { size: size, vpW: vpW, gap: g, cardW: cardW };
+    }
+
+    function renderDots() {
+      if (!dotsWrap) return;
+      var count = maxIndex() + 1;
+      dotsWrap.innerHTML = '';
+      if (count < 2) return;
+      for (var i = 0; i < count; i++) {
+        (function (dotIndex) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cfp-cats__dot' + (dotIndex === index ? ' is-active' : '');
+          btn.setAttribute('aria-label', 'Slide ' + (dotIndex + 1));
+          btn.addEventListener('click', function () {
+            index = dotIndex;
+            go();
+            restart();
+          });
+          dotsWrap.appendChild(btn);
+        })(i);
+      }
+    }
+
+    function go() {
+      var m = metrics();
+      var max = maxIndex();
+      if (index > max) index = 0;
+      if (index < 0) index = max;
+
+      cards.forEach(function (card) {
+        card.style.flex = '0 0 ' + m.cardW + 'px';
+        card.style.width = m.cardW + 'px';
+        card.style.maxWidth = m.cardW + 'px';
+      });
+
+      var offset = index * (m.cardW + m.gap);
+      var total = cards.length * m.cardW + (cards.length - 1) * m.gap;
+      var maxOffset = Math.max(0, total - m.vpW);
+      if (offset > maxOffset) offset = maxOffset;
+
+      track.style.transform = 'translate3d(' + (-offset) + 'px,0,0)';
+      renderDots();
+      if (prev) prev.disabled = max < 1;
+      if (next) next.disabled = max < 1;
+    }
+
+    function nextSlide() {
+      index = index >= maxIndex() ? 0 : index + 1;
+      go();
+    }
+
+    function prevSlide() {
+      index = index <= 0 ? maxIndex() : index - 1;
+      go();
+    }
+
+    function stop() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function restart() {
+      stop();
+      if (!autoplay || maxIndex() < 1) return;
+      timer = setInterval(nextSlide, autoplaySpeed);
+    }
+
+    function onPrev(e) {
+      e.preventDefault();
+      prevSlide();
+      restart();
+    }
+
+    function onNext(e) {
+      e.preventDefault();
+      nextSlide();
+      restart();
+    }
+
+    function onEnter() { stop(); }
+    function onLeave() { restart(); }
+    function onResize() {
+      go();
+      restart();
+    }
+
+    if (prev) prev.addEventListener('click', onPrev);
+    if (next) next.addEventListener('click', onNext);
+    root.addEventListener('mouseenter', onEnter);
+    root.addEventListener('mouseleave', onLeave);
+    window.addEventListener('resize', onResize, { passive: true });
+
+    root._cfpCatsCleanup = function () {
+      stop();
+      if (prev) prev.removeEventListener('click', onPrev);
+      if (next) next.removeEventListener('click', onNext);
+      root.removeEventListener('mouseenter', onEnter);
+      root.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', onResize);
+    };
+
+    requestAnimationFrame(function () {
+      go();
+      restart();
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .cfp-cats {
+    background: #ffffff;
+    color: #111111;
+    padding: var(--cfp-cats-pad-top, 72px) 0 var(--cfp-cats-pad-bottom, 72px);
+  }
+
+  .cfp-cats__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-cats__header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .cfp-cats__title {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #111111;
+    line-height: 1.15;
+  }
+
+  .cfp-cats__sub {
+    margin: 0 auto;
+    max-width: 36rem;
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: #6b7280;
+  }
+
+  .cfp-cats__stage {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .cfp-cats__viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .cfp-cats__track {
+    display: flex;
+    gap: 1.25rem;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+  }
+
+  .cfp-cats__card {
+    flex: 0 0 calc((100% - 3.75rem) / 4);
+    min-width: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.95rem;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .cfp-cats__media {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #f3f4f6;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  }
+
+  .cfp-cats__img {
+    width: 78%;
+    height: 78%;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .cfp-cats__img--placeholder {
+    width: 55%;
+    height: 55%;
+    opacity: 0.35;
+  }
+
+  .cfp-cats__label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.6em;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #111111;
+    line-height: 1.25;
+    text-align: center;
+  }
+
+  .cfp-cats__name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cfp-cats__arrow {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: #111111;
+    transition: transform 0.2s ease;
+  }
+
+  .cfp-cats__card:hover .cfp-cats__media {
+    background: #eceff3;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+    transform: translateY(-3px);
+  }
+
+  .cfp-cats__card:hover .cfp-cats__img {
+    transform: scale(1.05);
+  }
+
+  .cfp-cats__card:hover .cfp-cats__arrow {
+    transform: translateX(3px);
+  }
+
+  .cfp-cats__nav {
+    position: relative;
+    z-index: 2;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: #fff;
+    color: #111111;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .cfp-cats__nav:hover:not(:disabled) {
+    background: #6b2317;
+    color: #fff;
+  }
+
+  .cfp-cats__nav:disabled {
+    opacity: 0.28;
+    cursor: default;
+  }
+
+  .cfp-cats__dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.35rem;
+  }
+
+  .cfp-cats__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .cfp-cats__dot.is-active {
+    width: 28px;
+    background: #822c1d;
+  }
+
+  .cfp-cats__cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.75rem;
+  }
+
+  .cfp-cats__view-all {
+    gap: 0.5rem;
+    min-width: 168px;
+  }
+
+  .cfp-cats__view-all-arrow {
+    display: inline-flex;
+    transition: transform 0.2s ease;
+  }
+
+  .cfp-cats__view-all:hover .cfp-cats__view-all-arrow {
+    transform: translateX(3px);
+  }
+
+  @media screen and (max-width: 749px) {
+    .cfp-cats__stage {
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+
+    .cfp-cats__nav {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cfp-cats__track,
+    .cfp-cats__img,
+    .cfp-cats__arrow,
+    .cfp-cats__media,
+    .cfp-cats__view-all,
+    .cfp-cats__view-all-arrow {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Shop categories",
+  "tag": "section",
+  "class": "section-category-grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "SHOP BY CATEGORIES"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Ergonomic solutions for posture, sleep, work and travel"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Visible on desktop",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Autoplay speed",
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "prev_label",
+      "label": "Previous label",
+      "default": "Previous"
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "Next label",
+      "default": "Next"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View All label",
+      "default": "VIEW ALL"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View All link"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "category_card",
+      "name": "Category",
+      "limit": 7,
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Label",
+          "default": "Category"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Product image",
+          "info": "Best with cutout / transparent-style product photo on light background"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Custom link",
+          "info": "Used when no collection is selected"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shop categories",
+      "blocks": [
+        { "type": "category_card", "settings": { "title": "Back & Posture Support", "link": "/collections/back-posture-support" } },
+        { "type": "category_card", "settings": { "title": "Sleep & Pregnancy Comfort", "link": "/collections/sleep-pregnancy-comfort" } },
+        { "type": "category_card", "settings": { "title": "Seat Cushions (Office & Home)", "link": "/collections/seat-cushions" } },
+        { "type": "category_card", "settings": { "title": "Bike, Motorcycle & Outdoor Seating", "link": "/collections/bike-motorcycle-outdoor-seating" } },
+        { "type": "category_card", "settings": { "title": "Desk & Wrist Comfort", "link": "/collections/desk-wrist-comfort" } },
+        { "type": "category_card", "settings": { "title": "Neck & Travel Comfort", "link": "/collections/neck-travel-comfort" } },
+        { "type": "category_card", "settings": { "title": "Pain Relief & Massage", "link": "/collections/pain-relief-massage" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

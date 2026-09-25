@@ -1,0 +1,412 @@
+{%- comment -%}
+  Premium PDP reviews slides carousel.
+{%- endcomment -%}
+
+<section
+  class="cfp-rslide"
+  id="CfpRslide-{{ section.id }}"
+  style="
+    --cfp-rslide-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-rslide-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-rslide__inner">
+    <header class="cfp-rslide__header">
+      <div>
+        {% if section.settings.eyebrow != blank %}
+          <p class="cfp-rslide__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {% endif %}
+        {% if section.settings.title != blank %}
+          <h2 class="cfp-rslide__title">{{ section.settings.title | escape }}</h2>
+        {% endif %}
+      </div>
+      <div class="cfp-rslide__nav">
+        <button type="button" class="cfp-rslide__arrow" data-rslide-prev aria-label="Previous">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button type="button" class="cfp-rslide__arrow" data-rslide-next aria-label="Next">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+    </header>
+
+    {% if section.blocks.size > 0 %}
+      <div class="cfp-rslide__viewport" data-rslide-viewport>
+        <div class="cfp-rslide__track" data-rslide-track>
+          {% for block in section.blocks %}
+            <article class="cfp-rslide__card" {{ block.shopify_attributes }}>
+              {% assign stars = block.settings.stars | default: 5 %}
+              <div class="cfp-rslide__stars" aria-label="{{ stars }} of 5">
+                {% for i in (1..5) %}
+                  <span class="{% if i <= stars %}is-on{% endif %}">★</span>
+                {% endfor %}
+              </div>
+              {% if block.settings.title != blank %}
+                <h3 class="cfp-rslide__card-title">{{ block.settings.title | escape }}</h3>
+              {% endif %}
+              <blockquote class="cfp-rslide__quote">{{ block.settings.quote | escape }}</blockquote>
+              {% if block.settings.author != blank %}
+                <p class="cfp-rslide__author">{{ block.settings.author | escape }}</p>
+              {% endif %}
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="cfp-rslide__dots" data-rslide-dots aria-hidden="true"></div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('CfpRslide-{{ section.id }}');
+    if (!root) return;
+    var viewport = root.querySelector('[data-rslide-viewport]');
+    var track = root.querySelector('[data-rslide-track]');
+    var dotsWrap = root.querySelector('[data-rslide-dots]');
+    var cards = Array.prototype.slice.call(root.querySelectorAll('.cfp-rslide__card'));
+    if (!viewport || !track || !cards.length) return;
+    if (root._cfpRslideCleanup) root._cfpRslideCleanup();
+
+    var prev = root.querySelector('[data-rslide-prev]');
+    var next = root.querySelector('[data-rslide-next]');
+    var autoplay = {{ section.settings.autoplay | json }};
+    var speed = Math.max(3, Number({{ section.settings.autoplay_speed | default: 5 }}) || 5) * 1000;
+    var index = 0;
+    var timer = null;
+    var gap = 16;
+
+    function cols() {
+      var w = window.innerWidth || 1200;
+      if (w >= 990) return Math.min(3, cards.length);
+      if (w >= 750) return Math.min(2, cards.length);
+      return 1;
+    }
+
+    function maxIndex() {
+      return Math.max(0, cards.length - cols());
+    }
+
+    function metrics() {
+      var size = cols();
+      var vpW = viewport.clientWidth || 320;
+      var g = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || gap;
+      gap = g;
+      return { size: size, slideW: (vpW - g * (size - 1)) / size, gap: g };
+    }
+
+    function renderDots() {
+      if (!dotsWrap) return;
+      var count = maxIndex() + 1;
+      dotsWrap.innerHTML = '';
+      if (count < 2) return;
+      for (var i = 0; i < count; i++) {
+        (function (dotIndex) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cfp-rslide__dot' + (dotIndex === index ? ' is-active' : '');
+          btn.addEventListener('click', function () {
+            index = dotIndex;
+            go();
+            restart();
+          });
+          dotsWrap.appendChild(btn);
+        })(i);
+      }
+    }
+
+    function go() {
+      var m = metrics();
+      var max = maxIndex();
+      if (index > max) index = 0;
+      if (index < 0) index = max;
+      cards.forEach(function (card) {
+        card.style.flex = '0 0 ' + m.slideW + 'px';
+        card.style.width = m.slideW + 'px';
+      });
+      track.style.transform = 'translate3d(' + (-index * (m.slideW + m.gap)) + 'px,0,0)';
+      renderDots();
+    }
+
+    function restart() {
+      stop();
+      if (!autoplay || maxIndex() < 1) return;
+      timer = setInterval(function () {
+        index = index >= maxIndex() ? 0 : index + 1;
+        go();
+      }, speed);
+    }
+
+    function stop() {
+      if (timer) clearInterval(timer);
+      timer = null;
+    }
+
+    function onPrev() { index -= 1; go(); restart(); }
+    function onNext() { index += 1; go(); restart(); }
+
+    if (prev) prev.addEventListener('click', onPrev);
+    if (next) next.addEventListener('click', onNext);
+    root.addEventListener('mouseenter', stop);
+    root.addEventListener('mouseleave', restart);
+    window.addEventListener('resize', function () { go(); restart(); }, { passive: true });
+
+    root._cfpRslideCleanup = function () {
+      stop();
+      if (prev) prev.removeEventListener('click', onPrev);
+      if (next) next.removeEventListener('click', onNext);
+    };
+
+    requestAnimationFrame(function () { go(); restart(); });
+  })();
+</script>
+
+{% stylesheet %}
+  .cfp-rslide {
+    background: #ffffff;
+    padding: var(--cfp-rslide-pad-top, 72px) 0 var(--cfp-rslide-pad-bottom, 64px);
+    border-top: 1px solid #ececec;
+  }
+
+  .cfp-rslide__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-rslide__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .cfp-rslide__eyebrow {
+    margin: 0 0 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9ca3af;
+  }
+
+  .cfp-rslide__title {
+    margin: 0;
+    font-size: clamp(1.45rem, 2.6vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111111;
+  }
+
+  .cfp-rslide__nav {
+    display: flex;
+    gap: 0.45rem;
+  }
+
+  .cfp-rslide__arrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: #fff;
+    color: #111111;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .cfp-rslide__arrow:hover {
+    background: #6b2317;
+    color: #fff;
+  }
+
+  .cfp-rslide__viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .cfp-rslide__track {
+    display: flex;
+    gap: 1rem;
+    transition: transform 0.4s ease;
+    will-change: transform;
+  }
+
+  .cfp-rslide__card {
+    flex: 0 0 100%;
+    box-sizing: border-box;
+    background: #f7f7f7;
+    border-radius: 14px;
+    padding: 1.5rem 1.4rem;
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cfp-rslide__stars {
+    display: flex;
+    gap: 0.15rem;
+    margin-bottom: 0.75rem;
+    color: #d1d5db;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .cfp-rslide__stars .is-on {
+    color: #111111;
+  }
+
+  .cfp-rslide__card-title {
+    margin: 0 0 0.55rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .cfp-rslide__quote {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #4b5563;
+    flex: 1;
+  }
+
+  .cfp-rslide__author {
+    margin: 1.1rem 0 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #111111;
+  }
+
+  .cfp-rslide__dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-top: 1.35rem;
+  }
+
+  .cfp-rslide__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .cfp-rslide__dot.is-active {
+    width: 22px;
+    background: #822c1d;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "PDP Reviews slider",
+  "tag": "section",
+  "class": "section-cfp-rslide",
+  "enabled_on": {
+    "templates": ["product", "index"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Customer love"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "What customers say"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Autoplay speed",
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "range",
+          "id": "stars",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Stars",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Noticeable relief"
+        },
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Review",
+          "default": "After one week I already feel a real difference. Soft cover, solid support — perfect for everyday use."
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "PDP Reviews slider",
+      "blocks": [
+        { "type": "review" },
+        { "type": "review", "settings": { "title": "Great quality", "quote": "Replace with a real customer review before launch.", "author": "" } },
+        { "type": "review", "settings": { "stars": 4, "title": "Home office essential", "quote": "Replace with a real customer review before launch.", "author": "" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

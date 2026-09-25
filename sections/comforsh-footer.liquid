@@ -1,0 +1,537 @@
+<footer class="cfp-foot">
+  {%- comment -%} Leszly / Ocean-style layered animated waves {%- endcomment -%}
+  <div class="cfp-foot__waves" aria-hidden="true">
+    <div class="cfp-foot__wave"></div>
+    <div class="cfp-foot__wave"></div>
+    <div class="cfp-foot__wave"></div>
+  </div>
+
+  <div class="page-width cfp-foot__inner">
+    <div class="cfp-foot__top">
+      <div class="cfp-foot__menus">
+        <div class="cfp-foot__col">
+          <h3 class="cfp-foot__title">{{ section.settings.col1_title | escape }}</h3>
+          <ul class="cfp-foot__links">
+            {% for link in section.settings.col1_menu.links %}
+              <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+            {% else %}
+              <li><a href="{{ routes.collections_url }}">Startseite</a></li>
+              <li><a href="{{ routes.collections_url }}">Büro</a></li>
+              <li><a href="{{ routes.collections_url }}">Reisen</a></li>
+              <li><a href="{{ routes.collections_url }}">Wellness</a></li>
+              <li><a href="{{ routes.all_products_collection_url }}">Alle Produkte</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div class="cfp-foot__col">
+          <h3 class="cfp-foot__title">{{ section.settings.col2_title | escape }}</h3>
+          <ul class="cfp-foot__links">
+            {% for link in section.settings.col2_menu.links %}
+              <li><a href="{{ link.url }}">{{ link.title | escape }}</a></li>
+            {% else %}
+              <li><a href="{{ routes.search_url }}">Suche</a></li>
+              <li><a href="/pages/contact">Kontakt</a></li>
+              <li><a href="/policies/privacy-policy">Datenschutzerklärung</a></li>
+              <li><a href="/policies/refund-policy">Widerrufsbelehrung</a></li>
+              <li><a href="/policies/terms-of-service">AGB</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+
+      <div class="cfp-foot__brand">
+        {% if section.settings.logo != blank %}
+          {{
+            section.settings.logo
+            | image_url: width: 480
+            | image_tag:
+              class: 'cfp-foot__logo-img',
+              widths: '200, 320, 480',
+              sizes: '(min-width: 990px) 280px, 180px',
+              alt: shop.name,
+              loading: 'lazy'
+          }}
+        {% else %}
+          <a class="cfp-foot__logo" href="{{ routes.root_url }}">
+            {{ section.settings.logo_text | default: shop.name | escape }}{% if section.settings.show_logo_dot %}.{% endif %}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+
+ 
+
+    <div class="cfp-foot__bottom">
+      <div class="cfp-foot__meta">
+        {% if section.settings.show_localization and localization.available_countries.size > 1 %}
+          <div class="cfp-foot__locale">
+            <span class="cfp-foot__locale-label">{{ section.settings.locale_label | default: 'Country/region' | escape }}</span>
+            {% form 'localization', id: 'FooterCountryForm' %}
+              <div class="cfp-foot__locale-box">
+                <select name="country_code" class="cfp-foot__select" onchange="this.form.requestSubmit()">
+                  {% for country in localization.available_countries %}
+                    <option
+                      value="{{ country.iso_code }}"
+                      {% if country.iso_code == localization.country.iso_code %}selected{% endif %}
+                    >
+                      {{ country.currency.iso_code }} {{ country.currency.symbol }} | {{ country.name }}
+                    </option>
+                  {% endfor %}
+                </select>
+              </div>
+            {% endform %}
+          </div>
+        {% elsif section.settings.show_language %}
+          <div class="cfp-foot__locale">
+            {% assign footer_lang_prefix = 'FooterLang-' | append: section.id %}
+            {% render 'comforsh-language-switcher',
+              class: 'cfp-lang--footer',
+              id_prefix: footer_lang_prefix
+            %}
+          </div>
+        {% endif %}
+
+        <p class="cfp-foot__copy">
+          &copy; {{ 'now' | date: '%Y' }}, {{ shop.name }}
+          {% if section.settings.copyright_text != blank %}
+            · {{ section.settings.copyright_text | escape }}
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% stylesheet %}
+  .cfp-foot {
+    position: relative;
+    background: #822c1d;
+    color: #ffffff;
+    margin-top: 40px;
+    padding: 1.5rem 0 2rem;
+  }
+
+  /* Same pattern as leszly.com ocean waves section */
+  .cfp-foot__waves {
+    height: 40px;
+    width: 100%;
+    position: absolute;
+    top: -40px;
+    left: 0;
+    right: 0;
+    overflow-x: hidden;
+    pointer-events: none;
+  }
+
+  .cfp-foot__waves > div:empty {
+    display: block;
+  }
+
+  .cfp-foot__wave {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 88.7'%3E%3Cpath d='M800 56.9c-155.5 0-204.9-50-405.5-49.9-200 0-250 49.9-394.5 49.9v31.8h800v-.2-31.6z' fill='%23822c1d'/%3E%3C/svg%3E");
+    position: absolute;
+    width: 200%;
+    height: 100%;
+    animation: cfp-wave 10s -3s linear infinite;
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    bottom: 0;
+  }
+
+  .cfp-foot__wave:nth-of-type(2) {
+    bottom: 0;
+    animation: cfp-wave 20s -2s linear reverse infinite;
+    opacity: 0.5;
+  }
+
+  .cfp-foot__wave:nth-of-type(3) {
+    bottom: 0;
+    animation: cfp-wave 20s -1s linear infinite;
+    opacity: 0.5;
+  }
+
+  @keyframes cfp-wave {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(-25%); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .cfp-foot__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding: 1.25rem clamp(1.25rem, 4vw, 3rem) 0;
+  }
+
+  .cfp-foot__top {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    margin-bottom: 2.75rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-foot__top {
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 3rem;
+    }
+  }
+
+  .cfp-foot__menus {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem 3rem;
+  }
+
+  .cfp-foot__title {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .cfp-foot__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+  }
+
+  .cfp-foot__links a {
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    font-size: 0.92rem;
+    transition: color 0.2s ease;
+  }
+
+  .cfp-foot__links a:hover {
+    color: #ffffff;
+  }
+
+  .cfp-foot__brand {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-foot__brand {
+      justify-content: flex-end;
+      padding-top: 0.25rem;
+    }
+  }
+
+  .cfp-foot__logo {
+    font-size: clamp(2.8rem, 7vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    color: #ffffff !important;
+    text-decoration: none !important;
+  }
+
+  .cfp-foot__logo-img {
+    display: block;
+    max-width: min(280px, 55vw);
+    height: auto;
+    filter: brightness(0) invert(1);
+  }
+
+  .cfp-foot__mid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .cfp-foot__mid {
+      flex-direction: row;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+    }
+  }
+
+  .cfp-foot__newsletter {
+    max-width: 380px;
+    width: 100%;
+  }
+
+  .cfp-foot .cfp-foot__newsletter-title {
+    margin: 0 0 0.85rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    opacity: 1 !important;
+  }
+
+  .cfp-foot__form {
+    margin: 0;
+  }
+
+  .cfp-foot .cfp-foot__field {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid #ffffff !important;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #ffffff !important;
+  }
+
+  .cfp-foot .cfp-foot__input,
+  .cfp-foot input.cfp-foot__input[type='email'] {
+    flex: 1;
+    min-width: 0;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111111 !important;
+    -webkit-text-fill-color: #111111 !important;
+    caret-color: #111111;
+    padding: 0.85rem 1rem;
+    font: inherit;
+    font-size: 0.95rem;
+  }
+
+  .cfp-foot .cfp-foot__input::placeholder,
+  .cfp-foot input.cfp-foot__input[type='email']::placeholder {
+    color: #6b7280 !important;
+    -webkit-text-fill-color: #6b7280 !important;
+    opacity: 1 !important;
+  }
+
+  .cfp-foot .cfp-foot__input:focus {
+    outline: none;
+  }
+
+  .cfp-foot .cfp-foot__submit {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: #9c2400 !important;
+    color: #ffffff !important;
+    padding: 0 1rem;
+    min-width: 48px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cfp-foot .cfp-foot__submit:hover {
+    background: #6b2317 !important;
+    opacity: 1;
+  }
+
+  .cfp-foot .cfp-foot__form-msg {
+    margin: 0.55rem 0 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  .cfp-foot__form-msg--error {
+    color: #fca5a5;
+  }
+
+  .cfp-foot__social {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .cfp-foot__social a {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .cfp-foot__social a:hover {
+    background: #ffffff;
+    color: #822c1d;
+  }
+
+  .cfp-foot__bottom {
+    padding-top: 0.5rem;
+  }
+
+  .cfp-foot__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .cfp-foot__locale-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .cfp-foot__locale-box {
+    display: inline-flex;
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .cfp-foot__select {
+    appearance: none;
+    border: 0;
+    background: #6b2317 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+    color: #ffffff;
+    padding: 0.55rem 2rem 0.55rem 0.85rem;
+    font: inherit;
+    font-size: 0.85rem;
+    min-width: 190px;
+    cursor: pointer;
+  }
+
+  .cfp-foot__copy {
+    margin: 0;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .cfp-lang--footer {
+    color: #ffffff;
+  }
+
+  .cfp-lang--footer button,
+  .cfp-lang--footer a {
+    color: #ffffff !important;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Comforsh Footer",
+  "tag": "section",
+  "class": "section-comforsh-footer",
+  "settings": [
+    {
+      "type": "text",
+      "id": "col1_title",
+      "label": "Column 1 title",
+      "default": "Unsere Serien"
+    },
+    {
+      "type": "link_list",
+      "id": "col1_menu",
+      "label": "Column 1 menu"
+    },
+    {
+      "type": "text",
+      "id": "col2_title",
+      "label": "Column 2 title",
+      "default": "Kundenservice"
+    },
+    {
+      "type": "link_list",
+      "id": "col2_menu",
+      "label": "Column 2 menu"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Footer logo"
+    },
+    {
+      "type": "text",
+      "id": "logo_text",
+      "label": "Logo text",
+      "default": "Comforsh"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_logo_dot",
+      "label": "Show logo period",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Newsletter heading",
+      "default": "Jetzt anmelden und Rabatt sichern!"
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Email placeholder",
+      "default": "E-Mail"
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "Submit label",
+      "default": "Abonnieren"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Danke für Ihre Anmeldung!"
+    },
+    {
+      "type": "url",
+      "id": "facebook",
+      "label": "Facebook URL"
+    },
+    {
+      "type": "url",
+      "id": "instagram",
+      "label": "Instagram URL"
+    },
+    {
+      "type": "url",
+      "id": "tiktok",
+      "label": "TikTok URL"
+    },
+    {
+      "type": "url",
+      "id": "pinterest",
+      "label": "Pinterest URL"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_localization",
+      "label": "Show country/region",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "locale_label",
+      "label": "Country/region label",
+      "default": "Land/Region"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_language",
+      "label": "Show language if no countries",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright extra text"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comforsh Footer"
+    }
+  ]
+}
+{% endschema %}

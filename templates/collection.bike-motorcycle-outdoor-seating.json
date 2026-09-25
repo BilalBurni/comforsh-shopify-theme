@@ -1,0 +1,104 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-collection",
+      "blocks": {
+        "tab_1": {
+          "type": "collection_tab",
+          "settings": {
+            "collection": "back-posture-support",
+            "label": "Rücken- & Haltungshilfe"
+          }
+        },
+        "tab_2": {
+          "type": "collection_tab",
+          "settings": {
+            "collection": "sleep-pregnancy-comfort",
+            "label": "Schlaf- & Schwangerschaftskomfort"
+          }
+        },
+        "tab_3": {
+          "type": "collection_tab",
+          "settings": {
+            "collection": "seat-cushions",
+            "label": "Sitzkissen (Büro & Zuhause)"
+          }
+        },
+        "tab_4": {
+          "type": "collection_tab",
+          "settings": {
+            "collection": "bike-motorcycle-outdoor-seating",
+            "label": "Fahrrad-, Motorrad- & Outdoor-Sitze"
+          }
+        },
+        "tab_5": {
+          "type": "collection_tab",
+          "settings": {
+            "collection": "desk-wrist-comfort",
+            "label": "Schreibtisch- & Handgelenkskomfort"
+          }
+        },
+        "tab_6": {
+          "type": "collection_tab",
+          "settings": {
+            "collection": "neck-travel-comfort",
+            "label": "Nacken- & Reisekomfort"
+          }
+        },
+        "tab_7": {
+          "type": "collection_tab",
+          "settings": {
+            "collection": "pain-relief-massage",
+            "label": "Schmerzlinderung & Massage"
+          }
+        }
+      },
+      "block_order": [
+        "tab_1",
+        "tab_2",
+        "tab_3",
+        "tab_4",
+        "tab_5",
+        "tab_6",
+        "tab_7"
+      ],
+      "settings": {
+        "home_label": "Startseite",
+        "show_description": true,
+        "show_tabs": true,
+        "tabs_label": "Kollektionen",
+        "show_all_tab": true,
+        "all_tab_label": "Alle",
+        "filter_label": "Filter",
+        "sort_label": "Sortieren nach",
+        "apply_label": "Anwenden",
+        "clear_label": "Zurücksetzen",
+        "product_singular": "Produkt",
+        "product_plural": "Produkte",
+        "save_label": "SPAREN",
+        "sold_out_label": "AUSVERKAUFT",
+        "show_atc": true,
+        "atc_label": "In den Warenkorb",
+        "view_label": "Ansehen",
+        "columns": 4,
+        "products_per_page": 16,
+        "empty_text": "Noch keine Produkte in Fahrrad-, Motorrad- & Outdoor-Sitze.",
+        "empty_button": "Alle Produkte ansehen",
+        "prev_label": "Zurück",
+        "next_label": "Weiter"
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

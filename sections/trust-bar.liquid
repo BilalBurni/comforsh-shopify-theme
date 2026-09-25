@@ -1,0 +1,242 @@
+<section
+  class="hc-trust color-{{ section.settings.color_scheme }}"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width hc-trust__inner">
+    <div class="hc-trust__grid">
+      {% for block in section.blocks %}
+        <div class="hc-trust__item" data-cf-reveal="up" {{ block.shopify_attributes }}>
+          <div class="hc-trust__icon" aria-hidden="true">
+            {% case block.settings.icon %}
+              {% when 'shipping' %}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="1" y="3" width="15" height="13" rx="1"></rect>
+                  <path d="M16 8h4l3 3v5h-7V8z"></path>
+                  <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                  <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+              {% when 'security' %}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              {% when 'guarantee' %}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <path d="M9 12l2 2 4-4"></path>
+                </svg>
+              {% when 'quality' %}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2l2.4 4.9L20 8.2l-4 3.9.9 5.4L12 15.3 7.1 17.5 8 12.1 4 8.2l5.6-1.3L12 2z"></path>
+                </svg>
+              {% when 'service' %}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
+                </svg>
+              {% else %}
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6L9 17l-5-5"></path>
+                </svg>
+            {% endcase %}
+          </div>
+          {%- liquid
+            comment
+              The icon choice doubles as the locale group (comforsh.trust.<icon>),
+              so each item translates without an extra setting. Block settings are
+              the fallback. `t` output is already escaped, so only the fallbacks
+              are escaped here.
+            endcomment
+            assign trust_title_key = 'comforsh.trust.' | append: block.settings.icon | append: '.title'
+            assign trust_text_key = 'comforsh.trust.' | append: block.settings.icon | append: '.subtext'
+            assign trust_title = trust_title_key | t
+            assign trust_text = trust_text_key | t
+
+            if trust_title == trust_title_key or trust_title contains 'Translation missing'
+              assign trust_title = block.settings.title | escape
+            endif
+            if trust_text == trust_text_key or trust_text contains 'Translation missing'
+              assign trust_text = block.settings.subtext | escape
+            endif
+          -%}
+          <h3 class="hc-trust__title">{{ trust_title }}</h3>
+          <p class="hc-trust__text">{{ trust_text }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .hc-trust {
+    background: #ffffff;
+    border-top: 1px solid #efefef;
+  }
+
+  .hc-trust__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .hc-trust__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .hc-trust__grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.75rem;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .hc-trust__grid {
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+  }
+
+  .hc-trust__item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .hc-trust__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 0;
+    background: transparent;
+    color: #111111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.15rem;
+  }
+
+  .hc-trust__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111111;
+    letter-spacing: -0.01em;
+  }
+
+  .hc-trust__text {
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    color: #6b7280;
+    max-width: 24ch;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Trust Bar",
+  "tag": "section",
+  "class": "section-trust-bar",
+  "settings": [
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        { "value": "scheme-1", "label": "Scheme 1" },
+        { "value": "scheme-2", "label": "Scheme 2" }
+      ],
+      "default": "scheme-1",
+      "label": "Color Scheme"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 100,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 48
+    }
+  ],
+  "blocks": [
+    {
+      "type": "trust_item",
+      "name": "Trust Item",
+      "limit": 5,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            { "value": "shipping", "label": "Fast Shipping" },
+            { "value": "security", "label": "Secure Checkout" },
+            { "value": "guarantee", "label": "Money-Back Guarantee" },
+            { "value": "quality", "label": "Quality Materials" },
+            { "value": "service", "label": "Customer Service" }
+          ],
+          "default": "shipping"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Free shipping from €50"
+        },
+        {
+          "type": "text",
+          "id": "subtext",
+          "label": "Subtext",
+          "default": "Fast delivery within 2-4 business days"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Trust Bar",
+      "blocks": [
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "shipping",
+            "title": "Free shipping from €50",
+            "subtext": "Fast delivery within 2-4 business days"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "security",
+            "title": "100% Secure Payments",
+            "subtext": "SSL-encrypted, risk-free payment methods"
+          }
+        },
+        {
+          "type": "trust_item",
+          "settings": {
+            "icon": "guarantee",
+            "title": "30-day money-back",
+            "subtext": "Zufriedenheitsgarantie ohne Wenn und Aber"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

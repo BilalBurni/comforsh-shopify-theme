@@ -1,0 +1,376 @@
+{% liquid
+  comment
+    Locale strings win so the heading follows the active language; the section
+    settings are only a fallback. `t` output is already escaped, so the
+    fallbacks are escaped at assign time and never escaped again on output.
+  endcomment
+  assign eyebrow = 'comforsh.faq.eyebrow' | t
+  assign title = 'comforsh.faq.title' | t
+  assign subtitle = 'comforsh.faq.subtitle' | t
+
+  if eyebrow == 'comforsh.faq.eyebrow' or eyebrow contains 'Translation missing'
+    assign eyebrow = section.settings.eyebrow | escape
+  endif
+  if title == 'comforsh.faq.title' or title contains 'Translation missing'
+    assign title = section.settings.title | escape
+  endif
+  if subtitle == 'comforsh.faq.subtitle' or subtitle contains 'Translation missing'
+    assign subtitle = section.settings.subtitle | escape
+  endif
+%}
+
+<section
+  class="hc-faq"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+  id="ComforshFaq-{{ section.id }}"
+>
+  <div class="page-width hc-faq__inner">
+    {% if title != blank or subtitle != blank %}
+      <header class="hc-faq__header" data-cf-reveal="up">
+        {% if eyebrow != blank %}
+          <p class="hc-faq__eyebrow">{{ eyebrow }}</p>
+        {% endif %}
+        {% if title != blank %}
+          <h2 class="hc-faq__heading">{{ title }}</h2>
+        {% endif %}
+        {% if subtitle != blank %}
+          <p class="hc-faq__sub">{{ subtitle }}</p>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    <div class="hc-faq__list" data-faq-list>
+      {% for block in section.blocks %}
+        <details
+          class="hc-faq__item"
+          {{ block.shopify_attributes }}
+          {% if forloop.first and section.settings.open_first %}open{% endif %}
+        >
+          <summary class="hc-faq__summary">
+            <span class="hc-faq__question">{{ block.settings.question | escape }}</span>
+            <span class="hc-faq__icon" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                <line class="hc-faq__icon-h" x1="5" y1="12" x2="19" y2="12"></line>
+                <line class="hc-faq__icon-v" x1="12" y1="5" x2="12" y2="19"></line>
+              </svg>
+            </span>
+          </summary>
+          <div class="hc-faq__content">
+            {{ block.settings.answer }}
+          </div>
+        </details>
+      {% endfor %}
+    </div>
+
+    {% if section.settings.cta_text != blank or section.settings.cta_label != blank %}
+      <div class="hc-faq__cta">
+        {% if section.settings.cta_text != blank %}
+          <p class="hc-faq__cta-text">{{ section.settings.cta_text | escape }}</p>
+        {% endif %}
+        {% if section.settings.cta_label != blank %}
+          <a class="hc-faq__cta-link" href="{{ section.settings.cta_link | default: pages.contact.url | default: '/pages/contact' }}">
+            {{ section.settings.cta_label | escape }}
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (() => {
+    const root = document.getElementById('ComforshFaq-{{ section.id }}');
+    if (!root) return;
+    const list = root.querySelector('[data-faq-list]');
+    if (!list) return;
+    list.querySelectorAll('details').forEach((item) => {
+      item.addEventListener('toggle', () => {
+        if (!item.open) return;
+        list.querySelectorAll('details').forEach((other) => {
+          if (other !== item) other.open = false;
+        });
+      });
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .hc-faq {
+    background: #ffffff;
+  }
+
+  .hc-faq__inner {
+    max-width: 760px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .hc-faq__header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .hc-faq__eyebrow {
+    margin: 0 0 0.55rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  .hc-faq__heading {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.55rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #111111;
+    line-height: 1.15;
+  }
+
+  .hc-faq__sub {
+    margin: 0 auto;
+    max-width: 40ch;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #6b7280;
+  }
+
+  .hc-faq__list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #e8e8e8;
+  }
+
+  .hc-faq__item {
+    border-bottom: 1px solid #e8e8e8;
+    background: transparent;
+  }
+
+  .hc-faq__summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.35rem 0.15rem;
+    transition: color 0.2s ease;
+  }
+
+  .hc-faq__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .hc-faq__summary:hover .hc-faq__question {
+    color: #000000;
+  }
+
+  .hc-faq__question {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #111111;
+  }
+
+  .hc-faq__icon {
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: #ffffff;
+    color: #111111;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .hc-faq__item[open] .hc-faq__icon {
+    background: #822c1d;
+    color: #ffffff;
+  }
+
+  .hc-faq__icon-v {
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    transform-origin: center;
+  }
+
+  details[open] .hc-faq__icon-v {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+
+  .hc-faq__content {
+    padding: 0 2.75rem 1.35rem 0.15rem;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #4b5563;
+    animation: hc-faq-in 0.25s ease;
+  }
+
+  @keyframes hc-faq-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hc-faq__content p {
+    margin: 0;
+  }
+
+  .hc-faq__content p + p {
+    margin-top: 0.65rem;
+  }
+
+  .hc-faq__cta {
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+
+  .hc-faq__cta-text {
+    margin: 0 0 1rem;
+    font-size: 0.98rem;
+    color: #6b7280;
+  }
+
+  .hc-faq__cta-link {
+    min-width: 168px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ Accordion",
+  "tag": "section",
+  "class": "section-faq",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "FAQS"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subheading",
+      "default": "Answers about shipping, returns and comfort products"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Open first question by default",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "Bottom CTA text",
+      "default": "Still have questions? We're happy to help."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA button label",
+      "default": "Contact us"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        { "value": "scheme-1", "label": "Scheme 1" },
+        { "value": "scheme-2", "label": "Scheme 2" }
+      ],
+      "default": "scheme-1",
+      "label": "Color Scheme"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq_item",
+      "name": "FAQ Item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "How long does shipping take?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Orders are processed within 24 hours. Standard delivery usually takes 2 to 4 business days.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ Accordion",
+      "blocks": [
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "How long does shipping take?",
+            "answer": "<p>Orders are processed within 24 hours. Standard delivery usually takes 2 to 4 business days.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Do you offer a money-back guarantee?",
+            "answer": "<p>Yes — 30-day money-back guarantee. Try it at home. If it is not right, send it back.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "Are the covers washable?",
+            "answer": "<p>Most covers are removable and washable at 30°C. Check each product page for care details.</p>"
+          }
+        },
+        {
+          "type": "faq_item",
+          "settings": {
+            "question": "How does shipping work?",
+            "answer": "<p>We ship carefully packed. Free shipping applies from a certain order value — see cart for current terms.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

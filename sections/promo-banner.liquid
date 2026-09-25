@@ -1,0 +1,298 @@
+{% liquid
+  comment
+    Values coming from `t` are already HTML-escaped by Shopify, so the settings
+    fallbacks are escaped here instead and nothing is escaped again on output.
+  endcomment
+  assign eyebrow = section.settings.eyebrow | escape
+  assign heading = 'comforsh.promo.heading' | t
+  assign text = 'comforsh.promo.text' | t
+  assign button_label = 'comforsh.promo.button' | t
+
+  if heading == 'comforsh.promo.heading' or heading contains 'Translation missing'
+    assign heading = section.settings.heading | escape
+  endif
+  if text == 'comforsh.promo.text' or text contains 'Translation missing'
+    assign text = section.settings.text | escape
+  endif
+  if button_label == 'comforsh.promo.button' or button_label contains 'Translation missing'
+    assign button_label = section.settings.button_label | escape
+  endif
+
+  assign button_link = section.settings.button_link
+  assign image = section.settings.image
+  assign image_url = section.settings.fallback_image_url
+  assign video_url = section.settings.video_url
+  assign shopify_video = section.settings.video
+  assign overlay = section.settings.overlay_opacity | default: 42
+  assign use_video = false
+  if shopify_video != blank or video_url != blank
+    assign use_video = true
+  endif
+%}
+
+<section
+  class="hc-promo{% if use_video %} hc-promo--video{% endif %}"
+  style="
+    --hc-promo-min-h: {{ section.settings.min_height }}px;
+    --hc-promo-overlay: {{ overlay | times: 0.01 }};
+    {% unless use_video %}
+      {% if image != blank %}
+        --hc-promo-bg: url('{{ image | image_url: width: 2400 }}');
+      {% elsif image_url != blank %}
+        --hc-promo-bg: url('{{ image_url | escape }}');
+      {% else %}
+        --hc-promo-bg: url('https://cdn.shopify.com/s/files/1/1007/0569/8130/files/comforsh-outdoor-seating-lake.png?v=1786889570');
+      {% endif %}
+    {% endunless %}
+  "
+>
+  <div class="hc-promo__media" aria-hidden="true">
+    {% if shopify_video != blank %}
+      {{
+        shopify_video
+        | video_tag:
+          autoplay: true,
+          loop: true,
+          muted: true,
+          controls: false,
+          playsinline: true,
+          preload: 'metadata',
+          class: 'hc-promo__video',
+          image_size: '1920x'
+      }}
+    {% elsif video_url != blank %}
+      <video
+        class="hc-promo__video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+      >
+        <source src="{{ video_url }}" type="video/mp4">
+      </video>
+    {% else %}
+      <div class="hc-promo__bg"></div>
+    {% endif %}
+    <div class="hc-promo__overlay"></div>
+  </div>
+
+  <div class="hc-promo__content page-width" data-cf-reveal="up">
+    {% if eyebrow != blank %}
+      <p class="hc-promo__eyebrow">{{ eyebrow }}</p>
+    {% endif %}
+    {% if heading != blank %}
+      <h2 class="hc-promo__heading">{{ heading }}</h2>
+    {% endif %}
+    {% if text != blank %}
+      <p class="hc-promo__text">{{ text }}</p>
+    {% endif %}
+    {% if button_label != blank %}
+      <a class="hc-promo__btn" href="{{ button_link | default: routes.all_products_collection_url }}">
+        {{ button_label }}
+      </a>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .hc-promo {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #822c1d;
+    color: #ffffff;
+    width: 100%;
+    min-height: var(--hc-promo-min-h, 520px);
+  }
+
+  .hc-promo__media {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hc-promo__bg {
+    position: absolute;
+    inset: -4%;
+    background-color: #111111;
+    background-image: var(--hc-promo-bg);
+    background-size: cover;
+    background-position: center;
+    transform: scale(1.04);
+    animation: hc-promo-ken 18s ease-in-out infinite alternate;
+  }
+
+  .hc-promo__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform: scale(1.03);
+    animation: hc-promo-ken 22s ease-in-out infinite alternate;
+  }
+
+  @keyframes hc-promo-ken {
+    from { transform: scale(1.04) translate3d(0, 0, 0); }
+    to { transform: scale(1.1) translate3d(0, -1.5%, 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hc-promo__bg,
+    .hc-promo__video {
+      animation: none;
+      inset: 0;
+      transform: none;
+    }
+  }
+
+  .hc-promo__overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(0, 0, 0, calc(var(--hc-promo-overlay, 0.42) * 0.75)) 0%,
+        rgba(0, 0, 0, var(--hc-promo-overlay, 0.42)) 45%,
+        rgba(0, 0, 0, calc(var(--hc-promo-overlay, 0.42) * 1.15)) 100%
+      );
+  }
+
+  .hc-promo__content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 860px;
+    margin-inline: auto;
+    padding: clamp(4rem, 10vw, 6.5rem) 1.5rem;
+  }
+
+  .hc-promo__eyebrow {
+    margin: 0 0 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+  }
+
+  .hc-promo__heading {
+    margin: 0 0 1rem;
+    font-size: clamp(2.2rem, 6vw, 3.6rem);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    line-height: 1.05;
+    text-transform: uppercase;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff;
+    text-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+  }
+
+  .hc-promo__text {
+    margin: 0 auto 1.75rem;
+    font-size: clamp(1rem, 1.8vw, 1.15rem);
+    line-height: 1.6;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff;
+    max-width: 48ch;
+    text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  .hc-promo__btn {
+    min-width: 168px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Promo Banner",
+  "tag": "section",
+  "class": "section-promo-banner",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "HI, WE'RE COMFORSH"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "Ergonomic comfort for home, office and everyday life. Posture, recovery and wellbeing — made for real days."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "SHOP NOW"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "header",
+      "content": "Background media"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Shopify video",
+      "info": "Optional. Overrides image when set."
+    },
+    {
+      "type": "text",
+      "id": "video_url",
+      "label": "External MP4 URL",
+      "info": "Category mood: relief & massage. Used when no Shopify video is selected."
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Background image"
+    },
+    {
+      "type": "text",
+      "id": "fallback_image_url",
+      "label": "Fallback image URL",
+      "default": "https://cdn.shopify.com/s/files/1/1007/0569/8130/files/comforsh-outdoor-seating-lake.png?v=1786889570"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 20,
+      "max": 70,
+      "step": 2,
+      "unit": "%",
+      "label": "Overlay strength",
+      "default": 42
+    },
+    {
+      "type": "range",
+      "id": "min_height",
+      "min": 320,
+      "max": 760,
+      "step": 20,
+      "unit": "px",
+      "label": "Minimum height",
+      "default": 560
+    }
+  ],
+  "presets": [
+    {
+      "name": "Promo Banner"
+    }
+  ]
+}
+{% endschema %}

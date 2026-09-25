@@ -1,0 +1,25 @@
+{%- comment -%}
+  Translates common nav labels across DE / EN / FR / ES.
+  Usage: {% render 'comforsh-nav-label', title: link.title %}
+{%- endcomment -%}
+{%- liquid
+  assign raw = title | strip
+  assign key = raw | downcase
+  assign out = raw | escape
+
+  if key == 'home' or key == 'startseite' or key == 'accueil' or key == 'inicio'
+    assign out = 'comforsh.nav.home' | t
+  elsif key == 'catalog' or key == 'katalog' or key == 'catalogue' or key == 'catálogo' or key == 'catalogo'
+    assign out = 'comforsh.nav.catalog' | t
+  elsif key == 'contact' or key == 'kontakt' or key == 'contacto'
+    assign out = 'comforsh.nav.contact' | t
+  endif
+
+  comment
+    `t` output is already HTML-escaped, so only the raw fallback is escaped here.
+  endcomment
+  if out == 'comforsh.nav.home' or out == 'comforsh.nav.catalog' or out == 'comforsh.nav.contact' or out contains 'Translation missing'
+    assign out = raw | escape
+  endif
+-%}
+{{- out -}}

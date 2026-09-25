@@ -1,0 +1,259 @@
+{%- comment -%}
+  Premium PDP FAQ — checkmark accordion (reference style).
+{%- endcomment -%}
+
+<section
+  class="cfp-faq"
+  id="CfpFaq-{{ section.id }}"
+  style="
+    --cfp-faq-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-faq-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-faq__inner">
+    {% if section.settings.title != blank %}
+      <h2 class="cfp-faq__title">{{ section.settings.title | escape }}</h2>
+    {% endif %}
+
+    <div class="cfp-faq__list" data-cfp-faq-list>
+      {% for block in section.blocks %}
+        {% if block.settings.question != blank %}
+          <details
+            class="cfp-faq__item"
+            {{ block.shopify_attributes }}
+            {% if forloop.first and section.settings.open_first %}open{% endif %}
+          >
+            <summary class="cfp-faq__summary">
+              <span class="cfp-faq__check" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </span>
+              <span class="cfp-faq__q">{{ block.settings.question | escape }}</span>
+              <span class="cfp-faq__plus" aria-hidden="true"></span>
+            </summary>
+            <div class="cfp-faq__a">
+              {{ block.settings.answer }}
+            </div>
+          </details>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<script>
+  (() => {
+    const root = document.getElementById('CfpFaq-{{ section.id }}');
+    if (!root) return;
+    const list = root.querySelector('[data-cfp-faq-list]');
+    if (!list) return;
+    list.querySelectorAll('details').forEach((item) => {
+      item.addEventListener('toggle', () => {
+        if (!item.open) return;
+        list.querySelectorAll('details').forEach((other) => {
+          if (other !== item) other.open = false;
+        });
+      });
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .cfp-faq {
+    background: #f6f6f6;
+    padding: var(--cfp-faq-pad-top, 72px) 0 var(--cfp-faq-pad-bottom, 72px);
+  }
+
+  .cfp-faq__inner {
+    max-width: 720px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-faq__title {
+    margin: 0 0 2rem;
+    text-align: center;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111111;
+  }
+
+  .cfp-faq__list {
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #ececec;
+  }
+
+  .cfp-faq__item {
+    border-bottom: 1px solid #ececec;
+  }
+
+  .cfp-faq__item:last-child {
+    border-bottom: 0;
+  }
+
+  .cfp-faq__summary {
+    list-style: none;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.15rem 1.25rem;
+    cursor: pointer;
+  }
+
+  .cfp-faq__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .cfp-faq__check {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid #111111;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #111111;
+    flex-shrink: 0;
+  }
+
+  .cfp-faq__q {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111111;
+    line-height: 1.35;
+  }
+
+  .cfp-faq__plus {
+    width: 1rem;
+    height: 1rem;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .cfp-faq__plus::before,
+  .cfp-faq__plus::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: #822c1d;
+    transform: translate(-50%, -50%);
+  }
+
+  .cfp-faq__plus::before {
+    width: 12px;
+    height: 1.5px;
+  }
+
+  .cfp-faq__plus::after {
+    width: 1.5px;
+    height: 12px;
+  }
+
+  .cfp-faq__item[open] .cfp-faq__plus::after {
+    display: none;
+  }
+
+  .cfp-faq__a {
+    padding: 0 1.25rem 1.2rem 3.8rem;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #4b5563;
+  }
+
+  .cfp-faq__a p {
+    margin: 0 0 0.65rem;
+  }
+
+  .cfp-faq__a p:last-child {
+    margin-bottom: 0;
+  }
+
+  @media screen and (max-width: 749px) {
+    .cfp-faq__a {
+      padding-left: 1.25rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "PDP FAQ",
+  "tag": "section",
+  "class": "section-cfp-faq",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "FAQs"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Open first item",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq",
+      "name": "FAQ item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "How long does shipping take?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>Orders ship across the EU in 3–7 business days. Free shipping from €50.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "PDP FAQ",
+      "blocks": [
+        { "type": "faq" },
+        { "type": "faq", "settings": { "question": "Can I return my product?", "answer": "<p>Yes — 30-day money-back guarantee on unused items.</p>" } },
+        { "type": "faq", "settings": { "question": "How can I track my order?", "answer": "<p>You’ll receive a tracking link by email as soon as your order ships.</p>" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

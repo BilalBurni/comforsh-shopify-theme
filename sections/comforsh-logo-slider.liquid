@@ -1,0 +1,539 @@
+{%- comment -%}
+  Logo / series carousel — OS 2.0 blocks.
+  Adapted from brand-slider reference for Comforsh collections/series.
+{%- endcomment -%}
+
+<section
+  class="cfp-logos"
+  id="ComforshLogos-{{ section.id }}"
+  style="
+    --cfp-logos-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-logos-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-logos__inner">
+    {% if section.settings.title != blank or section.settings.subtitle != blank %}
+      <header class="cfp-logos__header">
+        {% if section.settings.title != blank %}
+          <h2 class="cfp-logos__title">{{ section.settings.title | escape }}</h2>
+        {% endif %}
+        {% if section.settings.subtitle != blank %}
+          <p class="cfp-logos__sub">{{ section.settings.subtitle | escape }}</p>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <div class="cfp-logos__stage">
+        <button type="button" class="cfp-logos__nav cfp-logos__nav--prev" aria-label="{{ section.settings.prev_label | escape }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+
+        <div class="cfp-logos__viewport" data-cfp-logos-viewport>
+          <ul class="cfp-logos__track" data-cfp-logos-track>
+            {% for block in section.blocks %}
+              {% liquid
+                assign item_title = block.settings.title
+                assign item_link = block.settings.link
+                assign collection = block.settings.collection
+                if collection != blank
+                  assign item_link = collection.url
+                  if item_title == blank
+                    assign item_title = collection.title
+                  endif
+                endif
+              %}
+              <li class="cfp-logos__slide" {{ block.shopify_attributes }}>
+                {% liquid
+                  assign icon_key = item_title | downcase | strip
+                  assign icon_type = 'default'
+                  if icon_key contains 'posture' or icon_key contains 'back'
+                    assign icon_type = 'posture'
+                  elsif icon_key contains 'sleep' or icon_key contains 'pregnancy'
+                    assign icon_type = 'sleep'
+                  elsif icon_key contains 'seat' or icon_key contains 'cushion'
+                    assign icon_type = 'seat'
+                  elsif icon_key contains 'outdoor' or icon_key contains 'bike'
+                    assign icon_type = 'outdoor'
+                  elsif icon_key contains 'desk' or icon_key contains 'wrist'
+                    assign icon_type = 'desk'
+                  elsif icon_key contains 'travel' or icon_key contains 'neck'
+                    assign icon_type = 'travel'
+                  elsif icon_key contains 'massage' or icon_key contains 'pain' or icon_key contains 'relief'
+                    assign icon_type = 'massage'
+                  endif
+                %}
+                <a
+                  class="cfp-logos__card"
+                  href="{{ item_link | default: routes.all_products_collection_url }}"
+                  {% if item_title != blank %}aria-label="{{ item_title | escape }}"{% endif %}
+                >
+                  {% if block.settings.logo != blank %}
+                    {{
+                      block.settings.logo
+                      | image_url: width: 400
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '160, 240, 320, 400',
+                        class: 'cfp-logos__img',
+                        alt: item_title
+                    }}
+                  {% else %}
+                    <span class="cfp-logos__mark" aria-hidden="true">
+                      {% case icon_type %}
+                        {% when 'posture' %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M24 8c-3 0-5 2.2-5 5v6c0 2.2 1.2 4.2 3 5.3V36a2 2 0 0 0 4 0V24.3c1.8-1.1 3-3.1 3-5.3v-6c0-2.8-2-5-5-5z"/><path d="M16 20c-3.5 1.5-6 5-6 9v3"/><path d="M32 20c3.5 1.5 6 5 6 9v3"/></svg>
+                        {% when 'sleep' %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 30c0-6.6 5.4-12 12-12h2c2.2 0 4 1.8 4 4v2h10a6 6 0 0 1 0 12H14a6 6 0 0 1-6-6z"/><path d="M34 12c2.5 0 4.5 2 4.5 4.5S36.5 21 34 21"/><path d="M28 10h4M30 8v4"/></svg>
+                        {% when 'seat' %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="10" y="18" width="28" height="10" rx="3"/><path d="M14 28v8M34 28v8"/><path d="M12 18V14a4 4 0 0 1 4-4h16a4 4 0 0 1 4 4v4"/></svg>
+                        {% when 'outdoor' %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="24" cy="24" r="10"/><path d="M24 10v4M24 34v4M10 24h4M34 24h4M13.5 13.5l2.8 2.8M31.7 31.7l2.8 2.8M13.5 34.5l2.8-2.8M31.7 16.3l2.8-2.8"/></svg>
+                        {% when 'desk' %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="14" width="32" height="18" rx="2"/><path d="M16 32v6M32 32v6M12 38h24"/><path d="M18 20h12"/></svg>
+                        {% when 'travel' %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 10h8v6h10l4 8H6l4-8h10V10z"/><circle cx="16" cy="32" r="4"/><circle cx="32" cy="32" r="4"/><path d="M20 32h8"/></svg>
+                        {% when 'massage' %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="24" cy="16" r="5"/><path d="M14 36c2-6 6-9 10-9s8 3 10 9"/><path d="M18 24c-3 1-5 4-5 7M30 24c3 1 5 4 5 7"/></svg>
+                        {% else %}
+                          <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="24" cy="24" r="12"/><path d="M24 16v16M16 24h16"/></svg>
+                      {% endcase %}
+                    </span>
+                    <span class="cfp-logos__fallback">{{ item_title | default: 'Series' | escape }}</span>
+                  {% endif %}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <button type="button" class="cfp-logos__nav cfp-logos__nav--next" aria-label="{{ section.settings.next_label | escape }}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <div class="cfp-logos__dots" data-cfp-logos-dots aria-hidden="true"></div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('ComforshLogos-{{ section.id }}');
+    if (!root) return;
+
+    var viewport = root.querySelector('[data-cfp-logos-viewport]');
+    var track = root.querySelector('[data-cfp-logos-track]');
+    var dotsWrap = root.querySelector('[data-cfp-logos-dots]');
+    var slides = Array.prototype.slice.call(root.querySelectorAll('.cfp-logos__slide'));
+    if (!viewport || !track || !slides.length) return;
+
+    // Re-init safely after theme editor / section morph
+    if (root._cfpLogosCleanup) root._cfpLogosCleanup();
+
+    var prev = root.querySelector('.cfp-logos__nav--prev');
+    var next = root.querySelector('.cfp-logos__nav--next');
+    var autoplay = {{ section.settings.autoplay | json }};
+    var autoplaySpeed = Math.max(2, Number({{ section.settings.autoplay_speed | default: 4 }}) || 4) * 1000;
+    var index = 0;
+    var timer = null;
+    var gap = 16;
+
+    function cols() {
+      var w = window.innerWidth || document.documentElement.clientWidth || 1200;
+      if (w >= 990) return Math.min(4, slides.length);
+      if (w >= 750) return Math.min(3, slides.length);
+      return Math.min(2, slides.length);
+    }
+
+    function maxIndex() {
+      return Math.max(0, slides.length - cols());
+    }
+
+    function metrics() {
+      var size = cols();
+      var vpW = viewport.clientWidth;
+      if (vpW < 40) vpW = root.clientWidth || 320;
+      var g = parseFloat(window.getComputedStyle(track).columnGap || window.getComputedStyle(track).gap) || gap;
+      gap = g;
+      var slideW = (vpW - g * (size - 1)) / size;
+      return { size: size, vpW: vpW, gap: g, slideW: slideW };
+    }
+
+    function renderDots() {
+      if (!dotsWrap) return;
+      var max = maxIndex();
+      var count = max + 1;
+      dotsWrap.innerHTML = '';
+      if (count < 2) return;
+      for (var i = 0; i < count; i++) {
+        (function (dotIndex) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cfp-logos__dot' + (dotIndex === index ? ' is-active' : '');
+          btn.setAttribute('aria-label', 'Slide ' + (dotIndex + 1));
+          btn.addEventListener('click', function () {
+            index = dotIndex;
+            go();
+            restart();
+          });
+          dotsWrap.appendChild(btn);
+        })(i);
+      }
+    }
+
+    function go() {
+      var m = metrics();
+      var max = maxIndex();
+      if (index > max) index = 0;
+      if (index < 0) index = max;
+
+      slides.forEach(function (slide) {
+        slide.style.flex = '0 0 ' + m.slideW + 'px';
+        slide.style.width = m.slideW + 'px';
+        slide.style.maxWidth = m.slideW + 'px';
+      });
+
+      // Equal cards; last view snaps so row stays full (no blank right side)
+      var offset = index * (m.slideW + m.gap);
+      var total = slides.length * m.slideW + (slides.length - 1) * m.gap;
+      var maxOffset = Math.max(0, total - m.vpW);
+      if (offset > maxOffset) offset = maxOffset;
+
+      track.style.transform = 'translate3d(' + (-offset) + 'px,0,0)';
+      renderDots();
+    }
+
+    function nextSlide() {
+      index = index >= maxIndex() ? 0 : index + 1;
+      go();
+    }
+
+    function prevSlide() {
+      index = index <= 0 ? maxIndex() : index - 1;
+      go();
+    }
+
+    function stop() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function restart() {
+      stop();
+      if (!autoplay || maxIndex() < 1) return;
+      timer = setInterval(nextSlide, autoplaySpeed);
+    }
+
+    function onPrev(e) {
+      e.preventDefault();
+      prevSlide();
+      restart();
+    }
+
+    function onNext(e) {
+      e.preventDefault();
+      nextSlide();
+      restart();
+    }
+
+    function onEnter() { stop(); }
+    function onLeave() { restart(); }
+    function onResize() {
+      go();
+      restart();
+    }
+
+    if (prev) prev.addEventListener('click', onPrev);
+    if (next) next.addEventListener('click', onNext);
+    root.addEventListener('mouseenter', onEnter);
+    root.addEventListener('mouseleave', onLeave);
+    window.addEventListener('resize', onResize, { passive: true });
+
+    root._cfpLogosCleanup = function () {
+      stop();
+      if (prev) prev.removeEventListener('click', onPrev);
+      if (next) next.removeEventListener('click', onNext);
+      root.removeEventListener('mouseenter', onEnter);
+      root.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', onResize);
+    };
+
+    // Defer one frame so layout width is ready
+    requestAnimationFrame(function () {
+      go();
+      restart();
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .cfp-logos {
+    background: #ffffff;
+    color: #111111;
+    padding: var(--cfp-logos-pad-top, 72px) 0 var(--cfp-logos-pad-bottom, 72px);
+  }
+
+  .cfp-logos__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-logos__header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .cfp-logos__title {
+    margin: 0 0 0.55rem;
+    font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cfp-logos__sub {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.98rem;
+  }
+
+  .cfp-logos__stage {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .cfp-logos__viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .cfp-logos__track {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    transition: transform 0.4s ease;
+    will-change: transform;
+  }
+
+  .cfp-logos__slide {
+    flex: 0 0 calc((100% - 1rem) / 2);
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .cfp-logos__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.85rem;
+    aspect-ratio: 1 / 1;
+    border: 1.5px solid #111111;
+    background: #fff;
+    text-decoration: none;
+    color: #111111;
+    padding: 1.25rem;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cfp-logos__card:hover {
+    background: #6b2317;
+    color: #ffffff;
+    border-color: #111111;
+    transform: translateY(-2px);
+  }
+
+  .cfp-logos__img {
+    max-width: 58%;
+    max-height: 42%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  .cfp-logos__mark {
+    display: inline-flex;
+    width: 3rem;
+    height: 3rem;
+    color: inherit;
+  }
+
+  .cfp-logos__mark svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .cfp-logos__fallback {
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .cfp-logos__nav {
+    position: relative;
+    z-index: 2;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: #fff;
+    color: #111111;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .cfp-logos__nav:hover {
+    background: #6b2317;
+    color: #fff;
+  }
+
+  .cfp-logos__dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.5rem;
+  }
+
+  .cfp-logos__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .cfp-logos__dot.is-active {
+    width: 28px;
+    background: #822c1d;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Logo slider",
+  "tag": "section",
+  "class": "section-comforsh-logo-slider",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "SHOP BY SERIES"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Collections for home, office and everyday comfort"
+    },
+    {
+      "type": "text",
+      "id": "prev_label",
+      "label": "Previous label",
+      "default": "Previous"
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "Next label",
+      "default": "Next"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Autoplay speed",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 72
+    }
+  ],
+  "blocks": [
+    {
+      "type": "logo",
+      "name": "Logo / series",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "logo",
+          "label": "Logo image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Name",
+          "default": "Series"
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Custom link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Logo slider",
+      "blocks": [
+        { "type": "logo", "settings": { "title": "Office" } },
+        { "type": "logo", "settings": { "title": "Startseite" } },
+        { "type": "logo", "settings": { "title": "Travel" } },
+        { "type": "logo", "settings": { "title": "Wellness" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

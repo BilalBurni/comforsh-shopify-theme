@@ -1,0 +1,187 @@
+{%- comment -%}
+  New Customer Accounts — login/register is Shopify-hosted (no Classic option on this store).
+{%- endcomment -%}
+{%- assign cfp_login_url = routes.storefront_login_url -%}
+
+<div class="account-actions">
+  <div class="account-actions__main-menu">
+    <header class="account-actions__header">
+      <h2
+        id="account-drawer-heading"
+        class="account-actions__title h5"
+      >
+        {% if customer and customer.first_name != blank %}
+          {{ 'content.account_title_personalized' | t: first_name: customer.first_name }}
+        {% else %}
+          {{ 'content.account_title' | t }}
+        {% endif %}
+      </h2>
+      {% if customer %}
+        <span class="account-actions__email">
+          {% if customer.email %}
+            {{ customer.email }}
+          {% elsif customer.phone %}
+            {{ customer.phone }}
+          {% endif %}
+        </span>
+      {% endif %}
+    </header>
+
+    {% unless customer %}
+      <div class="account-actions__sign-ins cfp-account-signins">
+        <a href="{{ cfp_login_url }}" class="account-actions__link button cfp-account-signin">
+          {{ 'actions.log_in' | t }}
+        </a>
+        <p class="cfp-account-note">
+          Neu hier? Mit derselben Anmeldung können Sie auch ein Konto erstellen.
+        </p>
+      </div>
+    {% endunless %}
+
+    <nav class="account-actions__nav">
+      <ul class="account-actions__list">
+        <li class="account-actions__list-item">
+          <a
+            href="{% if customer %}{{ routes.account_url }}{% else %}{{ cfp_login_url }}{% endif %}"
+            class="account-actions__link button-secondary"
+          >
+            <span class="account-actions__icon" aria-hidden="true">
+              {{- 'icon-orders.svg' | inline_asset_content -}}
+            </span>
+            {{ 'content.account_orders' | t }}
+          </a>
+        </li>
+        <li class="account-actions__list-item">
+          <a
+            href="{% if customer %}{{ routes.account_url }}{% else %}{{ cfp_login_url }}{% endif %}"
+            class="account-actions__link button-secondary"
+          >
+            <span class="account-actions__icon" aria-hidden="true">
+              {{- 'icon-account.svg' | inline_asset_content -}}
+            </span>
+            {{ 'content.account_profile' | t }}
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</div>
+
+{% stylesheet %}
+  .account-actions {
+    background-color: var(--color-background);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: height var(--animation-values);
+
+    &:has([data-active]) .account-actions__main-menu {
+      visibility: hidden;
+    }
+  }
+
+  .account-actions__header {
+    padding: var(--padding-xl);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-2xs);
+  }
+
+  .account-actions__title {
+    --font-h5--size: var(--font-size--lg);
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .account-actions__email {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-2xs);
+    color: rgb(var(--color-foreground-rgb) / var(--opacity-60));
+    max-width: var(--account-actions-max-width);
+    word-break: break-all;
+  }
+
+  .account-actions__sign-ins {
+    padding: var(--padding-xl);
+    padding-block-start: 0;
+    padding-block-end: var(--padding-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .cfp-account-signin {
+    background: #822c1d !important;
+    color: #ffffff !important;
+    border-color: #822c1d !important;
+    border-radius: 4px !important;
+    min-height: 2.75rem;
+    font-weight: 600;
+  }
+
+  .cfp-account-signin:hover {
+    background: #6b2317 !important;
+    border-color: #6b2317 !important;
+  }
+
+  .cfp-account-hub {
+    border-radius: 4px !important;
+    min-height: 2.75rem;
+    font-weight: 600;
+  }
+
+  .cfp-account-note {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+    color: #6b7280;
+  }
+
+  .account-actions__list .account-actions__link {
+    min-height: 2.75rem;
+    border-radius: 4px !important;
+  }
+
+  .account-actions__list-item:nth-child(2) .account-actions__link {
+    background: #fff !important;
+    color: #1f2937 !important;
+    border: 1px solid #d1d5db !important;
+  }
+
+  .account-actions__nav {
+    padding: var(--padding-xl);
+    padding-block-start: 0;
+  }
+
+  .account-actions__list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap-sm);
+    width: 100%;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    @media screen and (max-width: 300px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .account-actions__link {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--gap-2xs);
+  }
+
+  .account-actions__icon {
+    display: flex;
+    width: var(--icon-size-sm);
+    height: var(--icon-size-sm);
+    margin-block: -4px;
+  }
+{% endstylesheet %}

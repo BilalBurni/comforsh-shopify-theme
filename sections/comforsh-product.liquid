@@ -1,0 +1,2446 @@
+{% liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign product_form_id = 'ComforshProductForm-' | append: section.id
+  assign rating_value = product.metafields.reviews.rating.value.rating
+  assign rating_count = product.metafields.reviews.rating_count
+  assign rating_max = product.metafields.reviews.rating.value.scale_max | default: 5
+  assign save_percent = 0
+  if current_variant.compare_at_price > current_variant.price
+    assign save_amount = current_variant.compare_at_price | minus: current_variant.price
+    assign save_percent = save_amount | times: 100.0 | divided_by: current_variant.compare_at_price | round
+  endif
+
+  if rating_value == blank and section.settings.show_fallback_rating
+    assign rating_value = section.settings.fallback_rating
+    assign rating_count = section.settings.fallback_rating_count
+  endif
+
+  assign collection_crumb = product.collections.first
+%}
+
+<section class="cfp" id="ComforshProduct-{{ section.id }}">
+  <div class="page-width cfp__inner">
+    <nav class="cfp__crumbs" aria-label="Breadcrumb">
+      <a href="{{ routes.root_url }}">{{ section.settings.home_label | default: 'Startseite' | escape }}</a>
+      <span class="cfp__crumbs-sep" aria-hidden="true">/</span>
+      {% if collection_crumb != blank %}
+        <a href="{{ collection_crumb.url }}">{{ collection_crumb.title | escape }}</a>
+        <span class="cfp__crumbs-sep" aria-hidden="true">/</span>
+      {% endif %}
+      <span class="cfp__crumbs-current">{{ product.title | escape }}</span>
+    </nav>
+
+    <div class="cfp__grid">
+      {%- comment -%} Gallery {%- endcomment -%}
+      <div class="cfp__gallery">
+        <div class="cfp__main-media">
+          {% if product.selected_or_first_available_variant.featured_media != blank %}
+            {% assign featured = product.selected_or_first_available_variant.featured_media %}
+          {% else %}
+            {% assign featured = product.featured_media %}
+          {% endif %}
+
+          {% if featured != blank %}
+            {% assign main_image_id = 'CfpMainImage-' | append: section.id %}
+            {{
+              featured
+              | image_url: width: 1400
+              | image_tag:
+                class: 'cfp__main-img',
+                id: main_image_id,
+                widths: '600, 800, 1000, 1200, 1400',
+                sizes: '(min-width: 990px) 48vw, 100vw',
+                alt: product.title,
+                fetchpriority: 'high'
+            }}
+          {% else %}
+            {{ 'product-1' | placeholder_svg_tag: 'cfp__main-img' }}
+          {% endif %}
+        </div>
+
+        {% if product.media.size > 1 %}
+          <div class="cfp__thumbs" role="list">
+            {% for media in product.media %}
+              <button
+                type="button"
+                class="cfp__thumb{% if media == featured %} is-active{% endif %}"
+                data-cfp-thumb
+                data-image="{{ media | image_url: width: 1400 }}"
+                aria-label="{{ product.title | escape }} image {{ forloop.index }}"
+              >
+                {{
+                  media
+                  | image_url: width: 200
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '100, 150, 200',
+                    sizes: '72px',
+                    alt: media.alt | default: product.title,
+                    class: 'cfp__thumb-img'
+                }}
+              </button>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
+
+      {%- comment -%} Sticky bordered buy box {%- endcomment -%}
+      <div class="cfp__info">
+        <div class="cfp__buybox">
+        {% if section.settings.eyebrow != blank %}
+          <p class="cfp__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {% endif %}
+        <h1 class="cfp__title" title="{{ product.title | escape }}">{{ product.title | escape }}</h1>
+
+        {% if section.settings.shipping_badge != blank %}
+          <p class="cfp__ship-badge">
+            <span class="cfp__ship-dot" aria-hidden="true"></span>
+            {{ section.settings.shipping_badge | escape }}
+          </p>
+        {% endif %}
+
+        {% if section.settings.tagline != blank %}
+          <p class="cfp__tagline">{{ section.settings.tagline | escape }}</p>
+        {% elsif product.metafields.descriptors.subtitle != blank %}
+          <p class="cfp__tagline">{{ product.metafields.descriptors.subtitle.value | escape }}</p>
+        {% endif %}
+
+        {% if section.settings.show_pas and section.settings.pas_problem != blank %}
+          <div class="cfp__pas">
+            <p class="cfp__pas-item">
+              <span class="cfp__pas-label">{{ section.settings.pas_problem_label | default: 'Problem' | escape }}</span>
+              {{ section.settings.pas_problem | escape }}
+            </p>
+            {% if section.settings.pas_agitation != blank %}
+              <p class="cfp__pas-item">
+                <span class="cfp__pas-label">{{ section.settings.pas_agitation_label | default: 'Why it matters' | escape }}</span>
+                {{ section.settings.pas_agitation | escape }}
+              </p>
+            {% endif %}
+            {% if section.settings.pas_solution != blank %}
+              <p class="cfp__pas-item cfp__pas-item--solution">
+                <span class="cfp__pas-label">{{ section.settings.pas_solution_label | default: 'Solution' | escape }}</span>
+                {{ section.settings.pas_solution | escape }}
+              </p>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if rating_value != blank %}
+          <div class="cfp__rating" aria-label="{{ rating_value }} / {{ rating_max }}">
+            <span class="cfp__stars" aria-hidden="true">
+              {% assign full_stars = rating_value | floor %}
+              {% for i in (1..rating_max) %}
+                <span class="cfp__star{% if i <= full_stars %} is-filled{% endif %}">★</span>
+              {% endfor %}
+            </span>
+            <span class="cfp__rating-text">
+              {{ rating_value | round: 1 }}
+              {% if rating_count != blank %}
+                <span class="cfp__rating-count">({{ rating_count }})</span>
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
+
+        <div class="cfp__price" data-cfp-price-row>
+          {% if current_variant.compare_at_price > current_variant.price %}
+            <span class="cfp__price-compare" data-cfp-price-compare>{{ current_variant.compare_at_price | money }}</span>
+            <span class="cfp__price-sale" data-cfp-price>{{ current_variant.price | money }}</span>
+          {% else %}
+            <span class="cfp__price-regular" data-cfp-price>{{ current_variant.price | money }}</span>
+            <span class="cfp__price-compare" data-cfp-price-compare hidden></span>
+          {% endif %}
+          <span
+            class="cfp__save{% if save_percent <= 0 %} is-hidden{% endif %}"
+            data-cfp-save
+            {% if save_percent <= 0 %}hidden{% endif %}
+          >
+            {{ section.settings.save_badge_prefix | default: 'SAVE' | escape }}
+            <span data-cfp-save-value>{{ save_percent }}</span>%
+          </span>
+          <span
+            class="cfp__avail-badge{% if current_variant.available %} is-hidden{% endif %}"
+            data-cfp-avail-badge
+          >
+            {{ section.settings.sold_out_label | default: 'Sold out' | escape }}
+          </span>
+        </div>
+
+        {% if section.settings.show_benefits %}
+          <ul class="cfp__benefits">
+            {% for block in section.blocks %}
+              {% if block.type == 'benefit' and block.settings.text != blank %}
+                <li {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</li>
+              {% endif %}
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+        {% form 'product', product, id: product_form_id, class: 'cfp__form' %}
+          <input type="hidden" name="id" value="{{ current_variant.id }}" data-cfp-variant-id>
+
+          {% unless product.has_only_default_variant %}
+            <div class="cfp__variants">
+              {% for option in product.options_with_values %}
+                {% liquid
+                  assign option_name_down = option.name | downcase
+                  assign is_qty_option = false
+                  assign is_color_option = false
+                  if option_name_down == 'quantity' or option_name_down == 'menge' or option_name_down == 'anzahl'
+                    assign is_qty_option = true
+                  endif
+                  if option_name_down contains 'color' or option_name_down contains 'colour' or option_name_down contains 'couleur' or option_name_down contains 'farbe'
+                    assign is_color_option = true
+                  endif
+                %}
+
+                {%- comment -%}
+                  Values like "with massage beads" or "Type 3-for wrist" sit under an option
+                  named Color but are not colours. A grey circle tells the customer nothing,
+                  so if any value fails to resolve, show readable text buttons instead.
+                {%- endcomment -%}
+                {%- if is_color_option -%}
+                  {%- assign unresolved_colors = 0 -%}
+                  {%- for value in option.values -%}
+                    {%- capture v_hex %}{% render 'comforsh-swatch-hex', value: value %}{% endcapture -%}
+                    {%- if v_hex == blank -%}
+                      {%- assign unresolved_colors = unresolved_colors | plus: 1 -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                  {%- if unresolved_colors > 0 -%}
+                    {%- assign is_color_option = false -%}
+                  {%- endif -%}
+                {%- endif -%}
+
+                {% liquid
+                  assign option_label = option.name
+                  if is_qty_option
+                    assign option_label = section.settings.pack_label | default: 'Packung'
+                  endif
+                %}
+
+                {% if option.values.size == 1 %}
+                  <input type="hidden" name="options[{{ option.name | escape }}]" value="{{ option.values.first | escape }}" data-cfp-option data-index="{{ forloop.index0 }}">
+                {% else %}
+                  <div class="cfp__option">
+                    <span class="cfp__option-label">
+                      {{ option_label | escape }}:
+                      <span class="cfp__option-current" data-cfp-option-label="{{ forloop.index0 }}">
+                        {{ option.selected_value | escape }}
+                      </span>
+                    </span>
+
+                    {% if is_color_option %}
+                      <div class="cfp__swatches" data-cfp-pills role="listbox" aria-label="{{ option.name | escape }}">
+                        {% for value in option.values %}
+                          {% liquid
+                            assign swatch_hex = ''
+                          %}
+                          {%- capture swatch_hex %}{% render 'comforsh-swatch-hex', value: value %}{% endcapture -%}
+                          {%- liquid
+                            assign swatch_hex = swatch_hex | strip
+                            if swatch_hex == blank
+                              assign swatch_hex = '#d1d5db'
+                            endif
+                          -%}
+                          <button
+                            type="button"
+                            class="cfp__swatch{% if option.selected_value == value %} is-active{% endif %}{% if swatch_hex == '#f5f5f5' %} is-light{% endif %}"
+                            data-cfp-pill
+                            data-option-index="{{ forloop.parentloop.index0 }}"
+                            data-value="{{ value | escape }}"
+                            aria-label="{{ value | escape }}"
+                            title="{{ value | escape }}"
+                            style="--swatch: {{ swatch_hex }};"
+                          ></button>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <div class="cfp__pills" data-cfp-pills>
+                        {% for value in option.values %}
+                          {% liquid
+                            assign value_available = false
+                            if value.available == true or value.available == false
+                              assign value_available = value.available
+                            else
+                              for variant in product.variants
+                                if variant.available
+                                  if option.position == 1 and variant.option1 == value
+                                    assign value_available = true
+                                  elsif option.position == 2 and variant.option2 == value
+                                    assign value_available = true
+                                  elsif option.position == 3 and variant.option3 == value
+                                    assign value_available = true
+                                  endif
+                                endif
+                              endfor
+                            endif
+                          %}
+                          <button
+                            type="button"
+                            class="cfp__pill{% if option.selected_value == value %} is-active{% endif %}{% unless value_available %} is-unavailable{% endunless %}"
+                            data-cfp-pill
+                            data-option-index="{{ forloop.parentloop.index0 }}"
+                            data-value="{{ value | escape }}"
+                            {% unless value_available %}aria-disabled="true"{% endunless %}
+                          >
+                            <span>{{ value | escape }}</span>
+                          </button>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+
+                    <select
+                      id="Option-{{ section.id }}-{{ forloop.index0 }}"
+                      class="cfp__select cfp__select--hidden"
+                      name="options[{{ option.name | escape }}]"
+                      data-cfp-option
+                      data-index="{{ forloop.index0 }}"
+                      aria-hidden="true"
+                      tabindex="-1"
+                    >
+                      {% for value in option.values %}
+                        <option value="{{ value | escape }}" {% if option.selected_value == value %}selected{% endif %}>
+                          {{ value | escape }}
+                        </option>
+                      {% endfor %}
+                    </select>
+                  </div>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endunless %}
+
+          <div class="cfp__qty-wrap">
+            <div class="cfp__qty" data-cfp-qty>
+              <button type="button" class="cfp__qty-btn" data-cfp-qty-minus aria-label="Verringern">−</button>
+              <label class="visually-hidden" for="Quantity-{{ section.id }}">Menge</label>
+              <input
+                id="Quantity-{{ section.id }}"
+                class="cfp__qty-input"
+                type="number"
+                name="quantity"
+                value="1"
+                min="1"
+                data-cfp-qty-input
+              >
+              <button type="button" class="cfp__qty-btn" data-cfp-qty-plus aria-label="Erhöhen">+</button>
+            </div>
+          </div>
+
+          <div class="cfp__actions">
+            <button
+              type="submit"
+              class="cfp__atc{% unless current_variant.available %} is-soldout{% endunless %}"
+              data-cfp-atc
+              {% unless current_variant.available %}disabled{% endunless %}
+            >
+              <span data-cfp-atc-label>
+                {% if current_variant.available %}
+                  {{ section.settings.atc_label | default: 'Add to cart' | escape }}
+                {% else %}
+                  {{ section.settings.sold_out_label | default: 'Sold out' | escape }}
+                {% endif %}
+              </span>
+            </button>
+
+            {% if section.settings.show_buy_now %}
+              <button
+                type="submit"
+                name="checkout"
+                class="cfp__buy-now"
+                data-cfp-buy-now
+                {% unless current_variant.available %}disabled{% endunless %}
+              >
+                {{ section.settings.buy_now_label | default: 'Buy it now' | escape }}
+              </button>
+            {% endif %}
+          </div>
+          <p class="cfp__atc-feedback" data-cfp-atc-feedback hidden></p>
+        {% endform %}
+
+        {% if section.settings.show_trust_row %}
+          <div class="cfp__trust">
+            {% assign trust_index = 0 %}
+            {% for block in section.blocks %}
+              {% if block.type == 'trust' and block.settings.label != blank %}
+                {% assign trust_index = trust_index | plus: 1 %}
+                <div class="cfp__trust-item" {{ block.shopify_attributes }}>
+                  <span class="cfp__trust-icon" aria-hidden="true">
+                    {% case trust_index %}
+                      {% when 1 %}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7h13l5 5v5H3V7z"/><path d="M16 7v5h5"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/></svg>
+                      {% when 2 %}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+                      {% else %}
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+                    {% endcase %}
+                  </span>
+                  <span class="cfp__trust-label">{{ block.settings.label | escape }}</span>
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if section.settings.show_buybox_description and product.description != blank %}
+          <div class="cfp__buybox-desc rte">
+            {{ product.description | strip_html | truncatewords: 55 }}
+          </div>
+        {% endif %}
+
+        <div class="cfp__meta-links">
+          <button type="button" class="cfp__meta-link" data-cfp-share>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <path d="M8.6 13.5l6.8 3.9M15.4 6.6l-6.8 3.9"/>
+            </svg>
+            <span>{{ section.settings.share_label | default: 'Share' | escape }}</span>
+          </button>
+          {% if section.settings.show_description and product.description != blank %}
+            <a class="cfp__meta-link" href="#CfpDetails-{{ section.id }}" data-cfp-details-link>
+              <span>{{ section.settings.details_label | default: 'View full details' | escape }}</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6"/>
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+        </div>
+      </div>
+    </div>
+
+    {% if section.settings.show_description or section.settings.show_materials or section.settings.show_shipping or section.settings.show_reviews_panel %}
+      <div class="cfp__below" id="CfpDetails-{{ section.id }}" data-cfp-accordion>
+        {% if product.description != blank and section.settings.show_description %}
+          <details class="cfp__acc" open>
+            <summary class="cfp__acc-summary">{{ section.settings.description_heading | escape }}</summary>
+            <div class="cfp__panel is-active">
+              <div class="cfp__desc-body rte">
+                {{ product.description }}
+              </div>
+            </div>
+          </details>
+        {% endif %}
+
+        {% if section.settings.show_materials and section.settings.materials_content != blank %}
+          <details class="cfp__acc"{% if product.description == blank or section.settings.show_description == false %} open{% endif %}>
+            <summary class="cfp__acc-summary">{{ section.settings.materials_heading | escape }}</summary>
+            <div class="cfp__panel is-active">
+              <div class="cfp__desc-body rte">
+                {{ section.settings.materials_content }}
+              </div>
+            </div>
+          </details>
+        {% endif %}
+
+        {% if section.settings.show_shipping and section.settings.shipping_content != blank %}
+          <details class="cfp__acc">
+            <summary class="cfp__acc-summary">{{ section.settings.shipping_heading | escape }}</summary>
+            <div class="cfp__panel is-active">
+              <div class="cfp__desc-body rte">
+                {{ section.settings.shipping_content }}
+              </div>
+            </div>
+          </details>
+        {% endif %}
+
+        {% if section.settings.show_reviews_panel %}
+          <details class="cfp__acc">
+            <summary class="cfp__acc-summary">
+              {{ section.settings.reviews_heading | escape }}
+              {% if rating_count != blank %}
+                <span class="cfp__tab-count">{{ rating_count }}</span>
+              {% endif %}
+            </summary>
+            <div class="cfp__panel is-active">
+            <div class="cfp__reviews-summary">
+              {% if rating_value != blank %}
+                <div class="cfp__reviews-score">
+                  <span class="cfp__reviews-score-num">{{ rating_value | round: 1 }}</span>
+                  <span class="cfp__stars" aria-hidden="true">
+                    {% assign full_stars = rating_value | floor %}
+                    {% for i in (1..rating_max) %}
+                      <span class="cfp__star{% if i <= full_stars %} is-filled{% endif %}">★</span>
+                    {% endfor %}
+                  </span>
+                  {% if rating_count != blank %}
+                    <span class="cfp__rating-count">{{ rating_count }} Bewertungen</span>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+
+            <div class="cfp__reviews-list">
+              {% assign has_review_blocks = false %}
+              {% for block in section.blocks %}
+                {% if block.type == 'review' %}
+                  {% assign has_review_blocks = true %}
+                  <article class="cfp__review" {{ block.shopify_attributes }}>
+                    <div class="cfp__review-top">
+                      <div class="cfp__stars" aria-hidden="true">
+                        {% assign stars = block.settings.stars | default: 5 %}
+                        {% for i in (1..5) %}
+                          <span class="cfp__star{% if i <= stars %} is-filled{% endif %}">★</span>
+                        {% endfor %}
+                      </div>
+                      <span class="cfp__review-author">{{ block.settings.author | escape }}</span>
+                    </div>
+                    {% if block.settings.title != blank %}
+                      <h3 class="cfp__review-title">{{ block.settings.title | escape }}</h3>
+                    {% endif %}
+                    <p class="cfp__review-body">{{ block.settings.body | escape }}</p>
+                  </article>
+                {% endif %}
+              {% endfor %}
+
+              {% unless has_review_blocks %}
+                <p class="cfp__reviews-empty">{{ section.settings.reviews_empty | escape }}</p>
+              {% endunless %}
+            </div>
+
+            {% if section.settings.show_review_form %}
+              <div class="cfp__review-form-wrap" data-cfp-review-form>
+                <button type="button" class="cfp__review-toggle" data-cfp-review-toggle>
+                  {{ section.settings.review_form_heading | default: 'Bewertung schreiben' | escape }}
+                </button>
+                <form class="cfp__review-form" data-cfp-review-fields hidden>
+                  <p class="cfp__review-form-note">
+                    {{ section.settings.review_form_note | default: 'Ihre Bewertung hilft anderen Kunden bei der Entscheidung.' | escape }}
+                  </p>
+                  <div class="cfp__review-stars-input" data-cfp-star-input>
+                    <span class="cfp__option-label">Bewertung</span>
+                    <div class="cfp__star-picker">
+                      {% for i in (1..5) %}
+                        <button type="button" class="cfp__star-pick is-filled" data-star="{{ i }}" aria-label="{{ i }} Sterne">★</button>
+                      {% endfor %}
+                    </div>
+                    <input type="hidden" name="rating" value="5" data-cfp-star-value>
+                  </div>
+                  <div class="cfp__review-field">
+                    <label class="cfp__option-label" for="ReviewName-{{ section.id }}">Name</label>
+                    <input id="ReviewName-{{ section.id }}" class="cfp__review-input" type="text" name="author" required placeholder="Ihr Name">
+                  </div>
+                  <div class="cfp__review-field">
+                    <label class="cfp__option-label" for="ReviewTitle-{{ section.id }}">Titel</label>
+                    <input id="ReviewTitle-{{ section.id }}" class="cfp__review-input" type="text" name="title" required placeholder="Kurzfassung">
+                  </div>
+                  <div class="cfp__review-field">
+                    <label class="cfp__option-label" for="ReviewBody-{{ section.id }}">Ihre Bewertung</label>
+                    <textarea id="ReviewBody-{{ section.id }}" class="cfp__review-input cfp__review-textarea" name="body" rows="4" required placeholder="Was hat Ihnen gefallen?"></textarea>
+                  </div>
+                  <button type="submit" class="cfp__review-submit">
+                    {{ section.settings.review_submit_label | default: 'Bewertung absenden' | escape }}
+                  </button>
+                  <p class="cfp__review-success" data-cfp-review-success hidden>
+                    {{ section.settings.review_success | default: 'Danke! Ihre Bewertung wurde übermittelt und wird nach Prüfung angezeigt.' | escape }}
+                  </p>
+                </form>
+              </div>
+            {% endif %}
+
+            {% for block in section.blocks %}
+              {% if block.type == '@app' %}
+                {% render block %}
+              {% endif %}
+            {% endfor %}
+            </div>
+          </details>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if section.settings.show_sticky_bar %}
+  {% assign sticky_form_id = 'CfpStickyForm-' | append: section.id %}
+  <div class="cfp-sticky" id="CfpSticky-{{ section.id }}" data-cfp-sticky hidden>
+    <div class="cfp-sticky__bar">
+      <div class="cfp-sticky__product">
+        {% if product.featured_media != blank %}
+          {{
+            product.featured_media
+            | image_url: width: 120
+            | image_tag:
+              class: 'cfp-sticky__thumb',
+              loading: 'lazy',
+              widths: '80, 120',
+              sizes: '56px',
+              alt: product.title
+          }}
+        {% endif %}
+        <div class="cfp-sticky__meta">
+          <p class="cfp-sticky__title">{{ product.title | escape }}</p>
+          <div class="cfp-sticky__price">
+            {% if current_variant.compare_at_price > current_variant.price %}
+              <span class="cfp-sticky__compare" data-sticky-compare>{{ current_variant.compare_at_price | money }}</span>
+              <span class="cfp-sticky__sale" data-sticky-price>{{ current_variant.price | money }}</span>
+            {% else %}
+              <span class="cfp-sticky__sale" data-sticky-price>{{ current_variant.price | money }}</span>
+              <span class="cfp-sticky__compare" data-sticky-compare hidden></span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% form 'product', product, id: sticky_form_id, class: 'cfp-sticky__form' %}
+        <input type="hidden" name="id" value="{{ current_variant.id }}" data-sticky-variant-id>
+        <input type="hidden" name="quantity" value="1">
+        <button
+          type="submit"
+          class="cfp-sticky__btn"
+          data-sticky-atc
+          {% unless current_variant.available %}disabled{% endunless %}
+        >
+          <span data-sticky-atc-label>
+            {% if current_variant.available %}
+              {{ section.settings.atc_label | default: 'Add to cart' | escape }}
+            {% else %}
+              {{ section.settings.sold_out_label | default: 'Sold out' | escape }}
+            {% endif %}
+          </span>
+        </button>
+      {% endform %}
+    </div>
+  </div>
+{% endif %}
+
+<script type="application/ld+json">
+  {{ product | structured_data }}
+</script>
+
+<script>
+  (() => {
+    const root = document.getElementById('ComforshProduct-{{ section.id }}');
+    if (!root) return;
+
+    const mainImg = root.querySelector('#CfpMainImage-{{ section.id }}');
+    root.querySelectorAll('[data-cfp-thumb]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const url = btn.getAttribute('data-image');
+        if (mainImg && url) {
+          mainImg.src = url;
+          mainImg.srcset = '';
+        }
+        root.querySelectorAll('[data-cfp-thumb]').forEach((b) => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+      });
+    });
+
+    const qtyWrap = root.querySelector('[data-cfp-qty]');
+    const qtyInput = root.querySelector('[data-cfp-qty-input]');
+    if (qtyWrap && qtyInput) {
+      qtyWrap.querySelector('[data-cfp-qty-minus]')?.addEventListener('click', () => {
+        const next = Math.max(1, (parseInt(qtyInput.value, 10) || 1) - 1);
+        qtyInput.value = next;
+      });
+      qtyWrap.querySelector('[data-cfp-qty-plus]')?.addEventListener('click', () => {
+        const next = Math.max(1, (parseInt(qtyInput.value, 10) || 1) + 1);
+        qtyInput.value = next;
+      });
+      qtyInput.addEventListener('change', () => {
+        if (!qtyInput.value || parseInt(qtyInput.value, 10) < 1) qtyInput.value = 1;
+      });
+    }
+
+    const tabRoot = root.querySelector('[data-cfp-tabs]');
+    if (tabRoot) {
+      tabRoot.querySelectorAll('[data-cfp-tab]').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const id = tab.getAttribute('data-cfp-tab');
+          tabRoot.querySelectorAll('[data-cfp-tab]').forEach((t) => {
+            t.classList.toggle('is-active', t === tab);
+            t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+          });
+          tabRoot.querySelectorAll('[data-cfp-panel]').forEach((panel) => {
+            panel.classList.toggle('is-active', panel.getAttribute('data-cfp-panel') === id);
+          });
+        });
+      });
+    }
+
+    const variants = [
+      {%- for variant in product.variants -%}
+        {
+          id: {{ variant.id }},
+          available: {{ variant.available | json }},
+          price: {{ variant.price }},
+          compare_at_price: {{ variant.compare_at_price | default: 0 }},
+          option1: {{ variant.option1 | json }},
+          option2: {{ variant.option2 | json }},
+          option3: {{ variant.option3 | json }},
+          image: {% if variant.featured_media %}{{ variant.featured_media | image_url: width: 1400 | json }}{% else %}null{% endif %}
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    ];
+    const optionSelects = root.querySelectorAll('[data-cfp-option]');
+    const variantInput = root.querySelector('[data-cfp-variant-id]');
+    const form = root.querySelector('.cfp__form');
+    const atc = root.querySelector('[data-cfp-atc]');
+    const buyNow = root.querySelector('[data-cfp-buy-now]');
+    const atcLabelEl = root.querySelector('[data-cfp-atc-label]');
+    const atcFeedback = root.querySelector('[data-cfp-atc-feedback]');
+    const priceEl = root.querySelector('[data-cfp-price]');
+    const priceCompare = root.querySelector('[data-cfp-price-compare]');
+    const saveBadge = root.querySelector('[data-cfp-save]');
+    const saveValue = root.querySelector('[data-cfp-save-value]');
+    const availBadge = root.querySelector('[data-cfp-avail-badge]');
+    const currency = {{ cart.currency.iso_code | json }};
+    const atcLabel = {{ section.settings.atc_label | default: 'Add to cart' | json }};
+    const soldOutLabel = {{ section.settings.sold_out_label | default: 'Sold out' | json }};
+    const productTitle = {{ product.title | json }};
+    const productUrl = {{ product.url | json }};
+
+    if (form && atc) {
+      form.addEventListener('submit', async (event) => {
+        const submitter = event.submitter;
+        if (submitter && submitter.name === 'checkout') return;
+        event.preventDefault();
+        if (atc.disabled) return;
+        const variantId = root.querySelector('[data-cfp-variant-id]')?.value;
+        const qty = parseInt(root.querySelector('[data-cfp-qty-input]')?.value || '1', 10) || 1;
+        if (!variantId || !window.ComforshCart) {
+          form.submit();
+          return;
+        }
+
+        const original = atcLabelEl ? atcLabelEl.textContent : atcLabel;
+        atc.disabled = true;
+        if (atcLabelEl) atcLabelEl.textContent = 'Adding…';
+        if (atcFeedback) {
+          atcFeedback.hidden = true;
+          atcFeedback.textContent = '';
+        }
+
+        try {
+          await window.ComforshCart.add({
+            id: variantId,
+            quantity: qty,
+            title: productTitle
+          });
+          if (atcLabelEl) atcLabelEl.textContent = 'Added ✓';
+          if (atcFeedback) {
+            atcFeedback.hidden = false;
+            atcFeedback.textContent = 'Added to cart.';
+          }
+          setTimeout(() => {
+            if (atcLabelEl) atcLabelEl.textContent = original;
+            atc.disabled = false;
+          }, 1600);
+        } catch (err) {
+          if (atcLabelEl) atcLabelEl.textContent = original;
+          atc.disabled = false;
+          if (atcFeedback) {
+            atcFeedback.hidden = false;
+            atcFeedback.textContent = err.message || 'Could not add to cart.';
+          }
+        }
+      });
+    }
+
+    root.querySelector('[data-cfp-share]')?.addEventListener('click', async () => {
+      const shareData = {
+        title: productTitle,
+        url: window.location.origin + productUrl
+      };
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(shareData.url);
+          if (atcFeedback) {
+            atcFeedback.hidden = false;
+            atcFeedback.textContent = 'Link copied.';
+            setTimeout(() => { atcFeedback.hidden = true; }, 1800);
+          }
+        }
+      } catch (e) {}
+    });
+
+    const formatMoney = (cents) => {
+      try {
+        return (cents / 100).toLocaleString('de-DE', { style: 'currency', currency: currency });
+      } catch (e) {
+        return (cents / 100).toFixed(2) + ' ' + currency;
+      }
+    };
+
+    const syncVariant = () => {
+      if (!optionSelects.length || !variantInput) return;
+      const selected = Array.from(optionSelects).map((s) => s.value);
+      const match = variants.find((v) =>
+        selected.every((val, i) => (v['option' + (i + 1)] || null) === val)
+      );
+      if (!match) return;
+      variantInput.value = match.id;
+      if (atc) {
+        atc.disabled = !match.available;
+        atc.classList.toggle('is-soldout', !match.available);
+        if (atcLabelEl) atcLabelEl.textContent = match.available ? atcLabel : soldOutLabel;
+        else atc.textContent = match.available ? atcLabel : soldOutLabel;
+      }
+      if (buyNow) buyNow.disabled = !match.available;
+      if (availBadge) availBadge.classList.toggle('is-hidden', match.available);
+      if (priceEl) priceEl.textContent = formatMoney(match.price);
+      if (priceCompare) {
+        if (match.compare_at_price && match.compare_at_price > match.price) {
+          priceCompare.textContent = formatMoney(match.compare_at_price);
+          priceCompare.hidden = false;
+          if (saveBadge && saveValue) {
+            const pct = Math.round(((match.compare_at_price - match.price) / match.compare_at_price) * 100);
+            saveValue.textContent = String(pct);
+            saveBadge.hidden = pct <= 0;
+            saveBadge.classList.toggle('is-hidden', pct <= 0);
+          }
+        } else {
+          priceCompare.hidden = true;
+          if (saveBadge) {
+            saveBadge.hidden = true;
+            saveBadge.classList.add('is-hidden');
+          }
+        }
+      }
+      if (match.image && mainImg) {
+        mainImg.src = match.image;
+        mainImg.removeAttribute('srcset');
+      }
+    };
+
+    optionSelects.forEach((s) => s.addEventListener('change', syncVariant));
+
+    root.querySelectorAll('[data-cfp-pill]').forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const index = pill.getAttribute('data-option-index');
+        const value = pill.getAttribute('data-value');
+        const select = root.querySelector('[data-cfp-option][data-index="' + index + '"]');
+        if (!select) return;
+        select.value = value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        const group = pill.closest('[data-cfp-pills]');
+        group?.querySelectorAll('[data-cfp-pill]').forEach((p) => p.classList.toggle('is-active', p === pill));
+        const label = root.querySelector('[data-cfp-option-label="' + index + '"]');
+        if (label) label.textContent = value;
+      });
+    });
+
+    const reviewToggle = root.querySelector('[data-cfp-review-toggle]');
+    const reviewFields = root.querySelector('[data-cfp-review-fields]');
+    const reviewSuccess = root.querySelector('[data-cfp-review-success]');
+    if (reviewToggle && reviewFields) {
+      reviewToggle.addEventListener('click', () => {
+        reviewFields.hidden = !reviewFields.hidden;
+      });
+      reviewFields.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (reviewSuccess) reviewSuccess.hidden = false;
+        reviewFields.querySelectorAll('input:not([type="hidden"]), textarea').forEach((el) => {
+          if (el.name !== 'rating') el.value = '';
+        });
+        setTimeout(() => {
+          reviewFields.hidden = true;
+          if (reviewSuccess) reviewSuccess.hidden = true;
+        }, 3500);
+      });
+      const starValue = root.querySelector('[data-cfp-star-value]');
+      root.querySelectorAll('[data-star]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const n = parseInt(btn.getAttribute('data-star'), 10);
+          if (starValue) starValue.value = String(n);
+          root.querySelectorAll('[data-star]').forEach((s) => {
+            s.classList.toggle('is-filled', parseInt(s.getAttribute('data-star'), 10) <= n);
+          });
+        });
+      });
+    }
+
+    /* Sticky ATC bar */
+    const sticky = document.getElementById('CfpSticky-{{ section.id }}');
+    if (sticky) {
+      const buybox = root.querySelector('.cfp__buybox') || root.querySelector('.cfp__actions');
+      const stickyForm = sticky.querySelector('.cfp-sticky__form');
+      const stickyBtn = sticky.querySelector('[data-sticky-atc]');
+      const stickyLabel = sticky.querySelector('[data-sticky-atc-label]');
+      const stickyVariant = sticky.querySelector('[data-sticky-variant-id]');
+      const stickyPrice = sticky.querySelector('[data-sticky-price]');
+      const stickyCompare = sticky.querySelector('[data-sticky-compare]');
+
+      const showSticky = () => {
+        if (!buybox) {
+          sticky.hidden = false;
+          return;
+        }
+        sticky.hidden = buybox.getBoundingClientRect().bottom > 80;
+      };
+      window.addEventListener('scroll', showSticky, { passive: true });
+      window.addEventListener('resize', showSticky, { passive: true });
+      showSticky();
+
+      const syncSticky = () => {
+        if (variantInput && stickyVariant) stickyVariant.value = variantInput.value;
+        if (priceEl && stickyPrice) stickyPrice.textContent = priceEl.textContent;
+        if (stickyCompare) {
+          if (priceCompare && !priceCompare.hidden && priceCompare.textContent) {
+            stickyCompare.textContent = priceCompare.textContent;
+            stickyCompare.hidden = false;
+          } else {
+            stickyCompare.hidden = true;
+          }
+        }
+        if (atc && stickyBtn && stickyLabel) {
+          stickyBtn.disabled = atc.disabled;
+          stickyLabel.textContent = atc.disabled ? soldOutLabel : atcLabel;
+        }
+      };
+      root.addEventListener('change', syncSticky);
+      setInterval(syncSticky, 700);
+
+      if (stickyForm && stickyBtn) {
+        stickyForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          if (stickyBtn.disabled) return;
+          const variantId = stickyVariant?.value;
+          const original = stickyLabel ? stickyLabel.textContent : atcLabel;
+          stickyBtn.disabled = true;
+          if (stickyLabel) stickyLabel.textContent = 'Adding…';
+          try {
+            if (window.ComforshCart && variantId) {
+              await window.ComforshCart.add({ id: variantId, quantity: 1, title: productTitle });
+              if (stickyLabel) stickyLabel.textContent = 'Added ✓';
+            } else {
+              stickyForm.submit();
+              return;
+            }
+          } catch (e) {
+            if (stickyLabel) stickyLabel.textContent = original;
+            stickyBtn.disabled = false;
+            return;
+          }
+          setTimeout(() => {
+            if (stickyLabel) stickyLabel.textContent = original;
+            stickyBtn.disabled = false;
+          }, 1400);
+        });
+      }
+    }
+  })();
+</script>
+
+{% stylesheet %}
+  .cfp {
+    background: #ffffff;
+    padding: 1.25rem 0 3rem;
+  }
+
+  .cfp__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp__crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0 0 1.35rem;
+    font-size: 0.78rem;
+    color: #9ca3af;
+  }
+
+  .cfp__crumbs a {
+    color: #9ca3af;
+    text-decoration: none;
+  }
+
+  .cfp__crumbs a:hover {
+    color: #111111;
+  }
+
+  .cfp__crumbs-sep {
+    opacity: 0.7;
+  }
+
+  .cfp__crumbs-current {
+    color: #6b7280;
+    max-width: 40ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cfp__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  /*
+    Grid children are min-width:auto by default, so the thumbnail strip — whose
+    buttons are flex: 0 0 68px and refuse to shrink — pushed this column out to
+    its min-content width and the whole page scrolled sideways on phones.
+    Pinning both columns to 0 lets the strip scroll inside itself instead.
+  */
+  .cfp__gallery,
+  .cfp__info {
+    min-width: 0;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp__grid {
+      grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+      gap: 3rem;
+      align-items: start;
+    }
+
+    .cfp__info {
+      position: sticky;
+      top: calc(var(--header-group-height, 120px) + 1rem);
+    }
+  }
+
+  .cfp__buybox {
+    border: 1.5px solid #111111;
+    border-radius: 14px;
+    background: #ffffff;
+    padding: 1.5rem 1.4rem 1.35rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .cfp__buybox {
+      padding: 1.85rem 1.75rem 1.6rem;
+    }
+  }
+
+  .cfp__eyebrow {
+    margin: 0 0 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #9ca3af;
+  }
+
+  .cfp__ship-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0 0 0.85rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #111111;
+  }
+
+  .cfp__ship-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #16a34a;
+    flex-shrink: 0;
+  }
+
+  .cfp__tagline {
+    margin: 0 0 0.85rem;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #6b7280;
+  }
+
+  .cfp__pas {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin: 0 0 1.15rem;
+    padding: 0.95rem 1rem;
+    background: #f7f7f7;
+    border-radius: 6px;
+  }
+
+  .cfp__pas-item {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: #374151;
+  }
+
+  .cfp__pas-label {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #111111;
+  }
+
+  .cfp__pas-item--solution {
+    color: #111111;
+    font-weight: 500;
+  }
+
+  .cfp__main-media {
+    background: #f3f3f3;
+    border: 0;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+  }
+
+  .cfp__main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #f3f3f3;
+  }
+
+  .cfp__thumbs {
+    display: flex;
+    gap: 0.55rem;
+    margin-top: 0.85rem;
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.2rem;
+    scrollbar-width: thin;
+  }
+
+  .cfp__thumbs::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .cfp__thumbs::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 4px;
+  }
+
+  .cfp__thumb {
+    flex: 0 0 68px;
+    width: 68px;
+    height: 68px;
+    padding: 0;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: border-color 0.15s ease;
+  }
+
+  .cfp__thumb.is-active,
+  .cfp__thumb:hover {
+    border-color: #111111;
+  }
+
+  .cfp__thumb-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cfp__title {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+    color: #111111;
+  }
+
+  .cfp__rating {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .cfp__stars {
+    display: inline-flex;
+    gap: 0.1rem;
+    line-height: 1;
+  }
+
+  .cfp__star {
+    color: #d1d5db;
+    font-size: 0.95rem;
+  }
+
+  .cfp__star.is-filled {
+    color: #c4a35a;
+  }
+
+  .cfp__rating-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+
+  .cfp__rating-count {
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .cfp__price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem 0.75rem;
+    margin-bottom: 1.35rem;
+  }
+
+  .cfp__price-regular,
+  .cfp__price-sale {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #111111;
+  }
+
+  .cfp__price-compare {
+    font-size: 1.05rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+    font-weight: 500;
+  }
+
+  .cfp__save {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    background: #cc4800;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .cfp__save.is-hidden {
+    display: none !important;
+  }
+
+  .cfp__avail-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    background: #822c1d;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .cfp__avail-badge.is-hidden {
+    display: none;
+  }
+
+  .cfp__benefits {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .cfp__benefits li {
+    position: relative;
+    padding-left: 1.4rem;
+    font-size: 0.98rem;
+    line-height: 1.45;
+    color: #1f2937;
+  }
+
+  .cfp__benefits li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 50%;
+    background: #822c1d;
+  }
+
+  .cfp__variants {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .cfp__option-label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .cfp__select {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background: #fff;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+    color: #1f2937;
+  }
+
+  .cfp__select--hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .cfp__option-current {
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .cfp__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .cfp__pill {
+    position: relative;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0.45rem 0.7rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    color: #111111;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .cfp__pill.is-active {
+    border-color: #111111;
+    background: #fff;
+    color: #111111;
+    box-shadow: inset 0 0 0 1px #111111;
+  }
+
+  .cfp__pill:hover:not(.is-unavailable) {
+    border-color: #111111;
+  }
+
+  .cfp__pill.is-unavailable {
+    color: #9ca3af;
+    background: #fafafa;
+  }
+
+  .cfp__pill.is-unavailable::after {
+    content: '';
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    top: 50%;
+    height: 1px;
+    background: #9ca3af;
+    transform: rotate(-28deg);
+    pointer-events: none;
+  }
+
+  .cfp__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .cfp__swatch {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 50%;
+    border: 2px solid #e5e7eb;
+    background: var(--swatch, #d1d5db);
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+
+  .cfp__swatch.is-light {
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .cfp__swatch:hover {
+    transform: scale(1.06);
+  }
+
+  .cfp__swatch.is-active {
+    border-color: #822c1d;
+    outline: 2px solid #822c1d;
+    outline-offset: 2px;
+  }
+
+  .cfp__qty-wrap {
+    width: 100%;
+    margin-bottom: 0.85rem;
+  }
+
+  .cfp__qty {
+    display: grid;
+    grid-template-columns: 48px 1fr 48px;
+    align-items: stretch;
+    min-height: 52px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 10px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .cfp__qty-btn {
+    border: none;
+    background: #fff;
+    color: #111111;
+    font-size: 1.15rem;
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .cfp__qty-btn:hover {
+    background: #f3f4f6;
+  }
+
+  .cfp__qty-input {
+    width: 100%;
+    min-width: 0;
+    border: none;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111111;
+    background: #fff;
+    -moz-appearance: textfield;
+  }
+
+  .cfp__qty-input::-webkit-outer-spin-button,
+  .cfp__qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .cfp__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .cfp__buybox .cfp__atc {
+    width: 100%;
+    min-height: 54px;
+    border-radius: 10px !important;
+    background: #822c1d !important;
+    border: 1.5px solid #111111 !important;
+    color: #ffffff !important;
+    font-size: 0.92rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em;
+    text-transform: none;
+  }
+
+  .cfp__buybox .cfp__atc:hover:not(:disabled) {
+    background: #6b2317 !important;
+  }
+
+  .cfp__buybox .cfp__buy-now {
+    width: 100%;
+    min-height: 48px;
+    border-radius: 10px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #111111 !important;
+    color: #111111 !important;
+    font-weight: 700 !important;
+  }
+
+  .cfp__atc.is-soldout,
+  .cfp__atc:disabled {
+    background: #9ca3af !important;
+    border-color: #9ca3af !important;
+    color: #fff !important;
+    cursor: not-allowed;
+    opacity: 1;
+    transform: none !important;
+  }
+
+  .cfp__buy-now:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+
+  .cfp__atc-feedback {
+    margin: 0.55rem 0 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #111111;
+  }
+
+  .cfp__meta-links {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0.85rem 0 0;
+    padding-top: 0.85rem;
+    border-top: 1px solid #efefef;
+  }
+
+  .cfp__meta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: 0;
+    background: none;
+    padding: 0;
+    color: #6b7280;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .cfp__meta-link:hover {
+    color: #111111;
+  }
+
+  .cfp__trust {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin-top: 0.35rem;
+    padding-top: 1.15rem;
+    border-top: 1px solid #efefef;
+  }
+
+  .cfp__trust-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.4rem;
+    color: #111111;
+  }
+
+  .cfp__trust-icon {
+    display: inline-flex;
+    color: #111111;
+  }
+
+  .cfp__trust-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    color: #4b5563;
+  }
+
+  .cfp__trust-dot {
+    display: none;
+  }
+
+  .cfp__buybox-desc {
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #4b5563;
+  }
+
+  .cfp__acc {
+    border-top: 1px solid #e5e5e5;
+  }
+
+  .cfp__acc:last-child {
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  .cfp__acc-summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 0.1rem;
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #111111;
+  }
+
+  .cfp__acc-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .cfp__acc-summary::after {
+    content: '+';
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1;
+    color: #111111;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .cfp__acc[open] > .cfp__acc-summary::after {
+    content: '−';
+  }
+
+  .cfp__acc .cfp__panel {
+    display: block;
+    padding: 0 0 1.35rem;
+  }
+
+  .cfp__below {
+    max-width: 760px;
+    margin: 3rem auto 0;
+    padding-top: 0.25rem;
+  }
+
+  .cfp__tablist {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+  }
+
+  .cfp__tab {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 0.9rem 1.1rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+
+  .cfp__tab.is-active {
+    color: #822c1d;
+    border-bottom-color: #822c1d;
+  }
+
+  .cfp__tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.4rem;
+    height: 1.4rem;
+    margin-left: 0.35rem;
+    padding: 0 0.35rem;
+    border-radius: 999px;
+    background: #f3f3f3;
+    color: #111111;
+    font-size: 0.72rem;
+  }
+
+  .cfp__panel {
+    display: none;
+  }
+
+  .cfp__panel.is-active {
+    display: block;
+  }
+
+  .cfp__desc-body {
+    max-width: 100%;
+    font-size: 0.98rem;
+    line-height: 1.7;
+    color: #4b5563;
+  }
+
+  .cfp__desc-body :is(h1, h2, h3, h4) {
+    margin: 1.35rem 0 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
+    color: #111111;
+    text-transform: uppercase;
+  }
+
+  .cfp__desc-body :is(h1, h2):first-child {
+    margin-top: 0;
+  }
+
+  .cfp__desc-body p {
+    margin: 0 0 0.75rem;
+  }
+
+  .cfp__desc-body ul,
+  .cfp__desc-body ol {
+    margin: 0 0 1rem;
+    padding-left: 1.15rem;
+  }
+
+  .cfp__desc-body li {
+    margin-bottom: 0.35rem;
+  }
+
+  .cfp__desc-body strong {
+    color: #111111;
+  }
+
+  /* Specs tables / key-value rows from product HTML */
+  .cfp__desc-body table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0 1rem;
+    font-size: 0.92rem;
+  }
+
+  .cfp__desc-body tr {
+    border-bottom: 1px solid #ececec;
+  }
+
+  .cfp__desc-body th,
+  .cfp__desc-body td {
+    padding: 0.7rem 0.5rem 0.7rem 0;
+    text-align: left;
+    vertical-align: top;
+    color: #4b5563;
+  }
+
+  .cfp__desc-body th,
+  .cfp__desc-body td:first-child {
+    width: 42%;
+    color: #111111;
+    font-weight: 600;
+    padding-right: 1rem;
+  }
+
+  .cfp__tab-count {
+    background: #f3f3f3 !important;
+    color: #111111 !important;
+  }
+
+  .cfp__reviews-summary {
+    margin-bottom: 1.35rem;
+  }
+
+  .cfp__reviews-score {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .cfp__reviews-score-num {
+    font-size: 2.1rem;
+    font-weight: 800;
+    color: #111111;
+    line-height: 1;
+  }
+
+  .cfp__reviews-list {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .cfp__review {
+    background: #fff;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 1.2rem 1.25rem;
+  }
+
+  .cfp__review-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.55rem;
+  }
+
+  .cfp__review-author {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #9ca3af;
+  }
+
+  .cfp__review-title {
+    margin: 0 0 0.4rem;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .cfp__review-body {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: #4b5563;
+  }
+
+  .cfp__reviews-empty {
+    margin: 0;
+    color: #6b7280;
+  }
+
+  .cfp__review-form-wrap {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e8e8e8;
+  }
+
+  .cfp__review-toggle {
+    appearance: none;
+    border: 1.5px solid #111111;
+    background: #fff;
+    color: #111111;
+    min-height: 46px;
+    padding: 0.6rem 1.25rem;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .cfp__review-toggle:hover {
+    background: #6b2317;
+    color: #fff;
+  }
+
+  .cfp__review-form {
+    margin-top: 1.15rem;
+    display: grid;
+    gap: 0.85rem;
+    max-width: 100%;
+    padding: 1.15rem;
+    border: 1.5px solid #e8e8e8;
+    border-radius: 10px;
+    background: #fafafa;
+  }
+
+  .cfp__review-form-note {
+    margin: 0;
+    font-size: 0.88rem;
+    color: #6b7280;
+  }
+
+  .cfp__star-picker {
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .cfp__star-pick {
+    border: none;
+    background: transparent;
+    color: #d1d5db;
+    font-size: 1.45rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .cfp__star-pick.is-filled {
+    color: #111111;
+  }
+
+  .cfp__review-input {
+    width: 100%;
+    min-height: 48px;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    padding: 0.7rem 0.9rem;
+    font: inherit;
+    color: #111111;
+  }
+
+  .cfp__review-input:focus {
+    outline: none;
+    border-color: #111111;
+  }
+
+  .cfp__review-textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .cfp__review-submit {
+    justify-self: start;
+    min-height: 48px;
+    padding: 0.7rem 1.4rem;
+    border: 1.5px solid #111111;
+    border-radius: 4px;
+    background: #822c1d;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .cfp__review-submit:hover {
+    background: #000;
+  }
+
+  .cfp__review-success {
+    margin: 0;
+    color: #111111;
+    font-weight: 600;
+  }
+
+  .cfp-sticky {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 1rem;
+    z-index: var(--layer-raised);
+    display: flex;
+    justify-content: center;
+    padding-inline: 0.85rem;
+    pointer-events: none;
+  }
+
+  .cfp-sticky[hidden] {
+    display: none !important;
+  }
+
+  .cfp-sticky__bar {
+    pointer-events: auto;
+    width: min(920px, 100%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.85rem;
+    padding: 0.55rem 0.65rem 0.55rem 0.75rem;
+    background: #ffffff;
+    border: 1.5px solid #e5e5e5;
+    border-radius: 999px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+  }
+
+  .cfp-sticky__product {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cfp-sticky__thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #f3f3f3;
+    flex-shrink: 0;
+  }
+
+  .cfp-sticky__meta {
+    min-width: 0;
+  }
+
+  .cfp-sticky__title {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #111111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 42vw;
+  }
+
+  .cfp-sticky__price {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.15rem;
+  }
+
+  .cfp-sticky__compare {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+  }
+
+  .cfp-sticky__sale {
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #111111;
+  }
+
+  .cfp-sticky__form {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .cfp-sticky__btn {
+    min-height: 44px;
+    padding: 0 1.25rem;
+    border: 0;
+    border-radius: 999px;
+    background: #822c1d;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .cfp-sticky__btn:hover:not(:disabled) {
+    background: #6b2317;
+  }
+
+  .cfp-sticky__btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  @media screen and (max-width: 749px) {
+    /*
+      A full-width 1:1 image plus the header filled the whole first screen, so
+      the title, price and add-to-cart all started below the fold. Capping the
+      media height lets the buy box peek into view without shrinking the photo
+      to a thumbnail.
+    */
+    .cfp__main-media {
+      aspect-ratio: auto;
+      height: min(52vh, 360px);
+    }
+
+    .cfp__grid {
+      gap: 1.15rem;
+    }
+
+    .cfp__inner {
+      padding-inline: 1.15rem;
+    }
+
+    /* 40ch is wider than a phone, so a long product name broke the crumb row. */
+    .cfp__crumbs-current {
+      max-width: 100%;
+    }
+
+    .cfp__thumbs {
+      margin-top: 0.6rem;
+    }
+
+    .cfp__thumb {
+      flex-basis: 56px;
+      width: 56px;
+      height: 56px;
+    }
+
+    /* The heavy 1.5px frame reads as clutter at phone width. */
+    .cfp__buybox {
+      border-width: 1px;
+      border-radius: 12px;
+      padding: 1.2rem 1.1rem 1.3rem;
+    }
+
+    .cfp__title {
+      font-size: 1.32rem;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+
+    .cfp-sticky {
+      bottom: calc(0.65rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    .cfp-sticky__bar {
+      border-radius: 16px;
+      padding: 0.55rem;
+    }
+
+    .cfp-sticky__title {
+      max-width: 34vw;
+      font-size: 0.8rem;
+    }
+
+    .cfp-sticky__thumb {
+      width: 42px;
+      height: 42px;
+    }
+
+    .cfp-sticky__btn {
+      min-height: 42px;
+      padding: 0 0.95rem;
+      font-size: 0.72rem;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Comforsh Product",
+  "tag": "section",
+  "class": "section-comforsh-product",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Breadcrumb home label",
+      "default": "Startseite"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Ergonomischer Komfort"
+    },
+    {
+      "type": "text",
+      "id": "shipping_badge",
+      "label": "Shipping badge",
+      "default": "Free delivery within 7 days"
+    },
+    {
+      "type": "text",
+      "id": "save_badge_prefix",
+      "label": "Save badge prefix",
+      "default": "SAVE"
+    },
+    {
+      "type": "text",
+      "id": "tagline",
+      "label": "Benefit tagline",
+      "info": "Shown under the product title. Leave blank to use product subtitle metafield.",
+      "default": "Noticeable relief for posture and everyday comfort"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_pas",
+      "label": "Show problem-solution block",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_buybox_description",
+      "label": "Show short description in buy box",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "pas_problem_label",
+      "label": "Problem label",
+      "default": "Problem"
+    },
+    {
+      "type": "textarea",
+      "id": "pas_problem",
+      "label": "Problem",
+      "default": "Long sitting, poor posture or everyday strain that builds into discomfort."
+    },
+    {
+      "type": "text",
+      "id": "pas_agitation_label",
+      "label": "Agitation label",
+      "default": "Why it matters"
+    },
+    {
+      "type": "textarea",
+      "id": "pas_agitation",
+      "label": "Agitation",
+      "default": "Ignoring it can affect focus, sleep quality and how you feel at the end of the day."
+    },
+    {
+      "type": "text",
+      "id": "pas_solution_label",
+      "label": "Solution label",
+      "default": "Solution"
+    },
+    {
+      "type": "textarea",
+      "id": "pas_solution",
+      "label": "Solution",
+      "default": "Comforsh ergonomic support designed for real daily use — at home, at work and on the go."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_benefits",
+      "label": "Show benefit bullets",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show description accordion",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "description_heading",
+      "label": "Description tab label",
+      "default": "Produktbeschreibung"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_materials",
+      "label": "Show materials/care tab",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "materials_heading",
+      "label": "Materials tab label",
+      "default": "Material & Pflege"
+    },
+    {
+      "type": "richtext",
+      "id": "materials_content",
+      "label": "Materials/care content",
+      "default": "<p>High-quality materials made for daily use. Covers are removable and machine washable at 30°C. Please follow the care instructions.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping",
+      "label": "Show shipping tab",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "shipping_heading",
+      "label": "Shipping tab label",
+      "default": "Shipping & returns"
+    },
+    {
+      "type": "richtext",
+      "id": "shipping_content",
+      "label": "Shipping content",
+      "default": "<p>Free shipping from €50. Delivery usually takes 2–4 business days. 30-day money-back guarantee.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reviews_panel",
+      "label": "Show reviews tab",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "reviews_heading",
+      "label": "Reviews tab label",
+      "default": "Bewertungen"
+    },
+    {
+      "type": "text",
+      "id": "reviews_empty",
+      "label": "Empty reviews text",
+      "default": "No reviews yet. Be the first!"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_review_form",
+      "label": "Show write a review form",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "review_form_heading",
+      "label": "Review form button",
+      "default": "Bewertung schreiben"
+    },
+    {
+      "type": "text",
+      "id": "review_form_note",
+      "label": "Review form note",
+      "default": "Your review helps other customers decide."
+    },
+    {
+      "type": "text",
+      "id": "review_submit_label",
+      "label": "Review submit label",
+      "default": "Bewertung absenden"
+    },
+    {
+      "type": "text",
+      "id": "review_success",
+      "label": "Review success message",
+      "default": "Thanks! Your review has been submitted and will appear once approved."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_fallback_rating",
+      "label": "Show fallback rating (if no review app)",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "fallback_rating",
+      "min": 1,
+      "max": 5,
+      "step": 0.1,
+      "label": "Fallback rating",
+      "default": 4.8
+    },
+    {
+      "type": "number",
+      "id": "fallback_rating_count",
+      "label": "Fallback review count",
+      "default": 128
+    },
+    {
+      "type": "text",
+      "id": "pack_label",
+      "label": "Pack / quantity option label",
+      "default": "Packung"
+    },
+    {
+      "type": "text",
+      "id": "atc_label",
+      "label": "Add to cart label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Sold out label",
+      "default": "Sold out"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_buy_now",
+      "label": "Show Buy it now",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "buy_now_label",
+      "label": "Buy it now label",
+      "default": "Buy it now"
+    },
+    {
+      "type": "text",
+      "id": "share_label",
+      "label": "Share label",
+      "default": "Share"
+    },
+    {
+      "type": "text",
+      "id": "details_label",
+      "label": "Details link label",
+      "default": "View full details"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_trust_row",
+      "label": "Show trust row under buy box",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sticky_bar",
+      "label": "Show sticky add to cart bar",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "limit": 6,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Benefit text",
+          "default": "Noticeable relief at home and at work"
+        }
+      ]
+    },
+    {
+      "type": "trust",
+      "name": "Trust badge",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Secure payment"
+        }
+      ]
+    },
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {
+          "type": "range",
+          "id": "stars",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Stars",
+          "default": 5
+        },
+        {
+          "type": "text",
+          "id": "author",
+          "label": "Author"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Sehr empfehlenswert"
+        },
+        {
+          "type": "textarea",
+          "id": "body",
+          "label": "Review text",
+          "default": "Noticeable relief in everyday use. Great quality and fast delivery."
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comforsh Product",
+      "blocks": [
+        { "type": "benefit", "settings": { "text": "High-quality build for daily use" } },
+        { "type": "benefit", "settings": { "text": "Fast, tracked delivery across the EU" } },
+        { "type": "benefit", "settings": { "text": "Easy to use, ready straight out of the box" } },
+        { "type": "benefit", "settings": { "text": "30-day money-back guarantee" } },
+        { "type": "trust", "settings": { "label": "Secure payment" } },
+        { "type": "trust", "settings": { "label": "Free shipping" } },
+        { "type": "trust", "settings": { "label": "Easy returns" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

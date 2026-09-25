@@ -1,0 +1,111 @@
+{%- doc -%}
+  Compact language dropdown for the mobile header (globe + current code).
+  The full pill switcher does not fit beside the logo on small screens.
+{%- enddoc -%}
+
+{%- if localization.available_languages.size > 1 -%}
+  <details class="cfp-lang-compact">
+    <summary class="cfp-lang-compact__toggle" aria-label="{{ 'content.language' | t }}">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg>
+      <span class="cfp-lang-compact__code">{{ localization.language.iso_code | upcase }}</span>
+      <svg viewBox="0 0 10 6" width="9" height="6" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true" focusable="false"><path d="M1 1l4 4 4-4"/></svg>
+    </summary>
+    <ul class="cfp-lang-compact__menu" role="list">
+      {%- for language in localization.available_languages -%}
+        <li>
+          {%- assign form_id = 'MobileLang-' | append: language.iso_code -%}
+          {%- form 'localization', id: form_id -%}
+            <input type="hidden" name="language_code" value="{{ language.iso_code }}">
+            <button
+              type="submit"
+              class="cfp-lang-compact__option{% if language.iso_code == localization.language.iso_code %} is-active{% endif %}"
+              lang="{{ language.iso_code }}"
+              {% if language.iso_code == localization.language.iso_code %}aria-current="true"{% endif %}
+            >
+              <span>{{ language.endonym_name | capitalize }}</span>
+              <span class="cfp-lang-compact__iso">{{ language.iso_code | upcase }}</span>
+            </button>
+          {%- endform -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </details>
+{%- endif -%}
+
+{% stylesheet %}
+  .cfp-lang-compact {
+    position: relative;
+  }
+
+  .cfp-lang-compact__toggle {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.45rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    color: #111827;
+    cursor: pointer;
+  }
+
+  .cfp-lang-compact__toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .cfp-lang-compact[open] .cfp-lang-compact__toggle {
+    border-color: #822c1d;
+  }
+
+  .cfp-lang-compact__menu {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 0;
+    z-index: 30;
+    min-width: 9.5rem;
+    margin: 0;
+    padding: 0.3rem;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.6rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+
+  .cfp-lang-compact__menu form {
+    margin: 0;
+  }
+
+  .cfp-lang-compact__option {
+    appearance: none;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.7rem;
+    border: 0;
+    border-radius: 0.4rem;
+    background: transparent;
+    font: inherit;
+    font-size: 0.9rem;
+    color: #111827;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .cfp-lang-compact__option.is-active {
+    background: #822c1d;
+    color: #fff;
+  }
+
+  .cfp-lang-compact__iso {
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+{% endstylesheet %}

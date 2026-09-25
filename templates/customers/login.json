@@ -1,0 +1,38 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-customer-login",
+      "settings": {
+        "show_side_image": true,
+        "eyebrow": "Willkommen zurück",
+        "heading": "Anmelden",
+        "subheading": "Melden Sie sich an, um Bestellungen zu verfolgen und schneller einzukaufen.",
+        "email_label": "E-Mail",
+        "password_label": "Passwort",
+        "forgot_label": "Passwort vergessen?",
+        "button_label": "Anmelden",
+        "register_prompt": "Noch kein Konto?",
+        "register_link_label": "Registrieren",
+        "recover_heading": "Passwort zurücksetzen",
+        "recover_text": "Geben Sie Ihre E-Mail-Adresse ein. Wir senden Ihnen einen Link zum Zurücksetzen.",
+        "recover_button_label": "Link senden",
+        "recover_success": "Wenn ein Konto mit dieser E-Mail existiert, erhalten Sie in Kürze eine Nachricht.",
+        "back_to_login_label": "Zurück zur Anmeldung",
+        "padding_top": 64,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

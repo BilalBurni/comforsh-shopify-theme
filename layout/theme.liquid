@@ -1,0 +1,204 @@
+<!doctype html>
+<html
+  {% if request.design_mode %}
+    class="shopify-design-mode"
+  {% endif %}
+  lang="{{ request.locale.iso_code }}"
+>
+  <head>
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {% comment %} This a way to wait for main content to load when navigating to a new page so that the view transitions can work consistently {% endcomment %}
+    {% if settings.transition_to_main_product or settings.page_transition_enabled %}
+      <link
+        rel="expect"
+        href="#MainContent"
+        blocking="render"
+        id="view-transition-render-blocker"
+      >
+    {% endif %}
+
+    {%- render 'meta-tags' -%}
+    {%- render 'stylesheets' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-schemes' -%}
+
+    {%- comment -%}
+      Scroll reveal + parallax. The CSS only hides anything after the JS adds
+      .cf-ready, so a failed script leaves the page fully visible.
+    {%- endcomment -%}
+    {{ 'comforsh-motion.css' | asset_url | stylesheet_tag }}
+    <script src="{{ 'comforsh-motion.js' | asset_url }}" defer></script>
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {{ content_for_header }}
+  </head>
+
+  <body
+    class="page-width-{{ settings.page_width }} card-hover-effect-{{ settings.card_hover_effect }}"
+    style="
+      --color-comforsh-bg: {{ settings.comforsh_bg | default: '#FAF9F6' }};
+      --color-comforsh-text: {{ settings.comforsh_text | default: '#1F2937' }};
+      --color-comforsh-accent: {{ settings.comforsh_accent | default: '#822C1D' }};
+      --color-comforsh-accent-hover: {{ settings.comforsh_accent_hover | default: '#6B2317' }};
+      --comforsh-radius: {{ settings.comforsh_radius | default: 12 }}px;
+      --comforsh-section-space: {{ settings.comforsh_section_space_desktop | default: 80 }}px;
+      --comforsh-section-space-mobile: {{ settings.comforsh_section_space_mobile | default: 48 }}px;
+    "
+  >
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+    <div id="header-group">
+      {% sections 'header-group' %}
+    </div>
+
+    <script>
+      // Inline header height and menu style calculations to prevent layout shift
+      // Note: Updates in calculateHeaderGroupHeight(), updateTransparentHeaderOffset() and setHeaderMenuStyle() utilities.js should be kept in sync with this function
+      (function setHeaderHeighCustomProperties() {
+        /*
+         * Header calculation functions for maintaining CSS variables
+         * Mimic calculateHeaderGroupHeight() in utilities.js
+         */
+        const header = document.querySelector('header-component');
+        const headerGroup = document.querySelector('#header-group');
+        const hasHeaderSection = headerGroup?.querySelector('.header-section');
+
+        if (!header || !headerGroup) return;
+
+        const headerHeight = header.offsetHeight;
+
+        // Calculate the total height of the header group
+        let headerGroupHeight = 0;
+        const children = headerGroup.children;
+        for (let i = 0; i < children.length; i++) {
+          const element = children[i];
+          if (element === header || !(element instanceof HTMLElement)) continue;
+          headerGroupHeight += element.offsetHeight;
+        }
+
+        // Check for transparent header special case
+        if (header.hasAttribute('transparent') && header.parentElement?.nextElementSibling) {
+          headerGroupHeight += headerHeight;
+        }
+
+        // Set CSS variables
+        document.body.style.setProperty('--header-height', `${headerHeight}px`);
+        document.body.style.setProperty('--header-group-height', `${headerGroupHeight}px`);
+
+        /**
+         * Updates CSS custom properties for transparent header offset calculation
+         * Mimic updateTransparentHeaderOffset() in utilities.js
+         */
+
+        if (!hasHeaderSection || !header?.hasAttribute('transparent')) {
+          document.body.style.setProperty('--transparent-header-offset-boolean', '0');
+          return;
+        }
+
+        const hasImmediateSection = hasHeaderSection.nextElementSibling?.classList.contains('shopify-section');
+
+        const shouldApplyOffset = !hasImmediateSection ? '1' : '0';
+        document.body.style.setProperty('--transparent-header-offset-boolean', shouldApplyOffset);
+      })();
+
+      (function setHeaderMenuStyle() {
+        const headerComponent = document.querySelector('#header-component');
+        if (!headerComponent) return;
+
+        const apply = () => {
+          const isNarrow = window.matchMedia('(max-width: 989px)').matches;
+          // Always keep desktop as text-nav (HC). Drawer only on mobile.
+          headerComponent.dataset.menuStyle = isNarrow ? 'drawer' : 'menu';
+        };
+
+        apply();
+        window.addEventListener('resize', apply, { passive: true });
+      })();
+
+      (function headerScrollColor() {
+        const header = document.querySelector('#header-component');
+        const headerGroup = document.querySelector('#header-group');
+        if (!header) return;
+        const onScroll = () => {
+          const scrolled = window.scrollY > 8;
+          header.classList.toggle('is-scrolled', scrolled);
+          headerGroup?.classList.toggle('is-scrolled', scrolled);
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+      })();
+    </script>
+
+    <main
+      id="MainContent"
+      class="content-for-layout"
+      role="main"
+      data-page-transition-enabled="{{ settings.page_transition_enabled }}"
+      data-product-transition="{{ settings.transition_to_main_product }}"
+      data-template="{{ template }}"
+    >
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {% render 'search-modal' %}
+    {% render 'comforsh-cart-toast' %}
+
+    <script>
+      (() => {
+        const markActiveNav = () => {
+          const path = (window.location.pathname || '/').replace(/\/$/, '') || '/';
+          const links = document.querySelectorAll(
+            '#header-component .menu-list__link, #header-component .menu-list__item, .menu-drawer__menu-item'
+          );
+
+          links.forEach((link) => {
+            if (!(link instanceof HTMLAnchorElement)) return;
+            let hrefPath = '/';
+            try {
+              hrefPath = new URL(link.href, window.location.origin).pathname.replace(/\/$/, '') || '/';
+            } catch (e) {
+              return;
+            }
+
+            const isHome = hrefPath === '/';
+            const isActive = isHome
+              ? path === '/'
+              : path === hrefPath || path.startsWith(hrefPath + '/');
+
+            link.classList.toggle('menu-list__link--active', isActive && link.classList.contains('menu-list__link'));
+            link.classList.toggle('menu-drawer__menu-item--active', isActive && link.classList.contains('menu-drawer__menu-item'));
+            if (isActive) {
+              link.setAttribute('aria-current', 'page');
+            } else if (link.getAttribute('aria-current') === 'page') {
+              link.removeAttribute('aria-current');
+            }
+          });
+        };
+
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', markActiveNav);
+        } else {
+          markActiveNav();
+        }
+        document.addEventListener('shopify:section:load', markActiveNav);
+      })();
+    </script>
+
+    {% if settings.quick_add or settings.mobile_quick_add %}
+      {% render 'quick-add-modal' %}
+    {% endif %}
+  </body>
+</html>

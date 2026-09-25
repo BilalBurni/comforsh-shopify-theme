@@ -1,0 +1,531 @@
+{% liquid
+  comment
+    Locale strings win so the heading follows the active language; the section
+    settings are only a fallback. `t` output is already escaped, so the
+    fallbacks are escaped at assign time and never escaped again on output.
+  endcomment
+  assign title = 'comforsh.reviews.title' | t
+  assign subtitle = 'comforsh.reviews.subtitle' | t
+
+  if title == 'comforsh.reviews.title' or title contains 'Translation missing'
+    assign title = section.settings.title | escape
+  endif
+  if subtitle == 'comforsh.reviews.subtitle' or subtitle contains 'Translation missing'
+    assign subtitle = section.settings.subtitle | escape
+  endif
+%}
+
+<section
+  class="hc-reviews color-{{ section.settings.color_scheme }}"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+  id="ComforshReviews-{{ section.id }}"
+>
+  <div class="page-width hc-reviews__inner">
+    {% if title != blank or subtitle != blank %}
+      <header class="hc-reviews__header">
+        {% if subtitle != blank %}
+          <p class="hc-reviews__eyebrow">{{ subtitle }}</p>
+        {% endif %}
+        {% if title != blank %}
+          <h2 class="hc-reviews__heading">{{ title }}</h2>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    {% if section.blocks.size > 0 %}
+      <div class="hc-reviews__stage">
+        <button
+          type="button"
+          class="hc-reviews__nav hc-reviews__nav--prev"
+          aria-label="{{ section.settings.prev_label | default: 'Previous' | escape }}"
+          data-reviews-prev
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+
+        <div class="hc-reviews__viewport" data-reviews-viewport>
+          <div class="hc-reviews__track" data-reviews-track>
+            {% for block in section.blocks %}
+              <article class="hc-reviews__card" {{ block.shopify_attributes }}>
+                <div class="hc-reviews__stars" aria-label="5 of 5 stars">★★★★★</div>
+                <p class="hc-reviews__author">{{ block.settings.author_name | escape }}</p>
+                <blockquote class="hc-reviews__quote">
+                  {{ block.settings.quote | escape }}
+                </blockquote>
+              </article>
+            {% endfor %}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="hc-reviews__nav hc-reviews__nav--next"
+          aria-label="{{ section.settings.next_label | default: 'Next' | escape }}"
+          data-reviews-next
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="hc-reviews__dots" data-reviews-dots aria-hidden="true"></div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (function () {
+    var root = document.getElementById('ComforshReviews-{{ section.id }}');
+    if (!root) return;
+
+    var viewport = root.querySelector('[data-reviews-viewport]');
+    var track = root.querySelector('[data-reviews-track]');
+    var dotsWrap = root.querySelector('[data-reviews-dots]');
+    var cards = Array.prototype.slice.call(root.querySelectorAll('.hc-reviews__card'));
+    if (!viewport || !track || !cards.length) return;
+
+    if (root._hcReviewsCleanup) root._hcReviewsCleanup();
+
+    var prev = root.querySelector('[data-reviews-prev]');
+    var next = root.querySelector('[data-reviews-next]');
+    var autoplay = {{ section.settings.autoplay | json }};
+    var autoplaySpeed = Math.max(2, Number({{ section.settings.autoplay_speed | default: 5 }}) || 5) * 1000;
+    var index = 0;
+    var timer = null;
+    var gap = 16;
+
+    function cols() {
+      var w = window.innerWidth || 1200;
+      // Show one less than total when possible so the slider can move
+      if (w >= 990) return Math.min(3, cards.length);
+      if (w >= 750) return Math.min(2, cards.length);
+      return 1;
+    }
+
+    function maxIndex() {
+      return Math.max(0, cards.length - cols());
+    }
+
+    function metrics() {
+      var size = cols();
+      var vpW = viewport.clientWidth;
+      if (vpW < 40) vpW = root.clientWidth || 320;
+      var styles = window.getComputedStyle(track);
+      var g = parseFloat(styles.columnGap || styles.gap) || gap;
+      gap = g;
+      var cardW = (vpW - g * (size - 1)) / size;
+      return { size: size, vpW: vpW, gap: g, cardW: cardW };
+    }
+
+    function renderDots() {
+      if (!dotsWrap) return;
+      var count = maxIndex() + 1;
+      dotsWrap.innerHTML = '';
+      if (count < 2) return;
+      for (var i = 0; i < count; i++) {
+        (function (dotIndex) {
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'hc-reviews__dot' + (dotIndex === index ? ' is-active' : '');
+          btn.setAttribute('aria-label', 'Slide ' + (dotIndex + 1));
+          btn.addEventListener('click', function () {
+            index = dotIndex;
+            go();
+            restart();
+          });
+          dotsWrap.appendChild(btn);
+        })(i);
+      }
+    }
+
+    function go() {
+      var m = metrics();
+      var max = maxIndex();
+      if (index > max) index = 0;
+      if (index < 0) index = max;
+
+      cards.forEach(function (card) {
+        card.style.flex = '0 0 ' + m.cardW + 'px';
+        card.style.width = m.cardW + 'px';
+        card.style.maxWidth = m.cardW + 'px';
+      });
+
+      var offset = index * (m.cardW + m.gap);
+      var total = cards.length * m.cardW + (cards.length - 1) * m.gap;
+      var maxOffset = Math.max(0, total - m.vpW);
+      if (offset > maxOffset) offset = maxOffset;
+
+      track.style.transform = 'translate3d(' + (-offset) + 'px,0,0)';
+      renderDots();
+
+      if (prev) prev.disabled = max < 1;
+      if (next) next.disabled = max < 1;
+    }
+
+    function nextSlide() {
+      index = index >= maxIndex() ? 0 : index + 1;
+      go();
+    }
+
+    function prevSlide() {
+      index = index <= 0 ? maxIndex() : index - 1;
+      go();
+    }
+
+    function stop() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function restart() {
+      stop();
+      if (!autoplay || maxIndex() < 1) return;
+      timer = setInterval(nextSlide, autoplaySpeed);
+    }
+
+    function onPrev(e) {
+      e.preventDefault();
+      prevSlide();
+      restart();
+    }
+
+    function onNext(e) {
+      e.preventDefault();
+      nextSlide();
+      restart();
+    }
+
+    function onEnter() { stop(); }
+    function onLeave() { restart(); }
+    function onResize() {
+      go();
+      restart();
+    }
+
+    if (prev) prev.addEventListener('click', onPrev);
+    if (next) next.addEventListener('click', onNext);
+    root.addEventListener('mouseenter', onEnter);
+    root.addEventListener('mouseleave', onLeave);
+    window.addEventListener('resize', onResize, { passive: true });
+
+    root._hcReviewsCleanup = function () {
+      stop();
+      if (prev) prev.removeEventListener('click', onPrev);
+      if (next) next.removeEventListener('click', onNext);
+      root.removeEventListener('mouseenter', onEnter);
+      root.removeEventListener('mouseleave', onLeave);
+      window.removeEventListener('resize', onResize);
+    };
+
+    requestAnimationFrame(function () {
+      go();
+      restart();
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .hc-reviews {
+    background: #ffffff;
+  }
+
+  .hc-reviews__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .hc-reviews__header {
+    text-align: center;
+    margin-bottom: 2.25rem;
+  }
+
+  .hc-reviews__eyebrow {
+    margin: 0 0 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  .hc-reviews__heading {
+    margin: 0;
+    font-size: clamp(1.45rem, 3vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #111111;
+  }
+
+  .hc-reviews__stage {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hc-reviews__viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .hc-reviews__track {
+    display: flex;
+    gap: 1rem;
+    transition: transform 0.4s ease;
+    will-change: transform;
+  }
+
+  .hc-reviews__card {
+    flex: 0 0 calc((100% - 3rem) / 4);
+    min-width: 0;
+    box-sizing: border-box;
+    background: #f5f5f5;
+    border: 0;
+    border-radius: 8px;
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 180px;
+  }
+
+  .hc-reviews__stars {
+    color: #f59e0b;
+    font-size: 0.9rem;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.65rem;
+    line-height: 1;
+  }
+
+  .hc-reviews__author {
+    margin: 0 0 0.55rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .hc-reviews__quote {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #4b5563;
+    font-weight: 400;
+  }
+
+  .hc-reviews__nav {
+    position: relative;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: #fff;
+    color: #111111;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .hc-reviews__nav:hover:not(:disabled) {
+    background: #6b2317;
+    color: #fff;
+  }
+
+  .hc-reviews__nav:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+
+  .hc-reviews__dots {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.25rem;
+  }
+
+  .hc-reviews__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    border: 1.5px solid #111111;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+  }
+
+  .hc-reviews__dot.is-active {
+    width: 28px;
+    background: #822c1d;
+  }
+
+  @media screen and (max-width: 749px) {
+    .hc-reviews__stage {
+      grid-template-columns: 1fr;
+      gap: 0.85rem;
+    }
+
+    .hc-reviews__nav {
+      display: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Customer Reviews",
+  "tag": "section",
+  "class": "section-testimonials",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "WHAT ARE PEOPLE SAYING"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "prev_label",
+      "label": "Previous label",
+      "default": "Previous"
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "Next label",
+      "default": "Next"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_speed",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Autoplay speed",
+      "default": 5
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "options": [
+        { "value": "scheme-1", "label": "Scheme 1" },
+        { "value": "scheme-2", "label": "Scheme 2" }
+      ],
+      "default": "scheme-1",
+      "label": "Color Scheme"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review Card",
+      "limit": 12,
+      "settings": [
+        {
+          "type": "textarea",
+          "id": "quote",
+          "label": "Review Quote",
+          "default": "Comfort that actually helps at my desk. Quality feels premium and shipping was quick."
+        },
+        {
+          "type": "text",
+          "id": "author_name",
+          "label": "Author Name"
+        },
+        {
+          "type": "image_picker",
+          "id": "product_image",
+          "label": "Product thumbnail"
+        },
+        {
+          "type": "text",
+          "id": "product_image_url",
+          "label": "Fallback thumbnail URL"
+        },
+        {
+          "type": "checkbox",
+          "id": "verified",
+          "label": "Verified buyer",
+          "default": true
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Customer Reviews",
+      "blocks": [
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Replace with a real customer review before launch.",
+            "author_name": ""
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Replace with a real customer review before launch.",
+            "author_name": ""
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Replace with a real customer review before launch.",
+            "author_name": ""
+          }
+        },
+        {
+          "type": "review",
+          "settings": {
+            "quote": "Replace with a real customer review before launch.",
+            "author_name": ""
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

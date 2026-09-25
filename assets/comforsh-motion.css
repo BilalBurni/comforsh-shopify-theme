@@ -1,0 +1,119 @@
+/*
+  Comforsh scroll motion.
+
+  Elements opt in with data-cf-reveal and stay hidden until comforsh-motion.js
+  adds .cf-in. If JS never runs, .cf-ready is never set and everything renders
+  fully visible, so content is never trapped behind a broken observer.
+
+  Easing matches the reference store's feel: a soft, slightly overshooting
+  ease-out rather than a linear glide.
+*/
+
+:root {
+  --cf-ease: cubic-bezier(0.26, 0.54, 0.32, 1);
+  --cf-reveal-duration: 0.75s;
+  --cf-reveal-distance: 28px;
+  --cf-stagger: 90ms;
+}
+
+/* Only hide things once JS has confirmed it can reveal them again. */
+.cf-ready [data-cf-reveal] {
+  opacity: 0;
+  will-change: opacity, transform;
+  transition:
+    opacity var(--cf-reveal-duration) var(--cf-ease),
+    transform var(--cf-reveal-duration) var(--cf-ease);
+  transition-delay: calc(var(--cf-index, 0) * var(--cf-stagger));
+}
+
+.cf-ready [data-cf-reveal='up'] {
+  transform: translate3d(0, var(--cf-reveal-distance), 0);
+}
+
+.cf-ready [data-cf-reveal='left'] {
+  transform: translate3d(calc(var(--cf-reveal-distance) * -1.5), 0, 0);
+}
+
+.cf-ready [data-cf-reveal='right'] {
+  transform: translate3d(calc(var(--cf-reveal-distance) * 1.5), 0, 0);
+}
+
+.cf-ready [data-cf-reveal='zoom'] {
+  transform: scale(0.94);
+}
+
+.cf-ready [data-cf-reveal].cf-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* Drop the hint once the animation is done so it stops costing a layer. */
+.cf-ready [data-cf-reveal].cf-done {
+  will-change: auto;
+}
+
+/*
+  Parallax. The JS writes --cf-shift; the transform lives here so the element
+  keeps its own object-fit and sizing rules.
+*/
+.cf-ready [data-cf-parallax],
+.cf-ready .cf-parallax {
+  /*
+    Scale is a variable so a section can zoom on hover without rewriting the
+    whole transform and wiping out the parallax offset.
+  */
+  transform: translate3d(0, var(--cf-shift, 0px), 0) scale(var(--cf-parallax-scale, 1.12));
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+/* Slower, calmer lift on cards and media than the reference store's hover. */
+.cf-card-hover {
+  transition:
+    transform 0.5s var(--cf-ease),
+    box-shadow 0.5s var(--cf-ease);
+}
+
+.cf-card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.12);
+}
+
+.cf-media-zoom {
+  overflow: hidden;
+}
+
+.cf-media-zoom img {
+  transition: transform 0.7s var(--cf-ease);
+}
+
+.cf-media-zoom:hover img {
+  transform: scale(1.06);
+}
+
+/*
+  Anyone who asks for reduced motion gets the finished state immediately:
+  no fades, no parallax, no hover travel.
+*/
+@media (prefers-reduced-motion: reduce) {
+  .cf-ready [data-cf-reveal],
+  .cf-ready [data-cf-reveal].cf-in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .cf-ready [data-cf-parallax],
+  .cf-ready .cf-parallax {
+    transform: none;
+    transition: none;
+  }
+
+  .cf-card-hover,
+  .cf-card-hover:hover,
+  .cf-media-zoom img,
+  .cf-media-zoom:hover img {
+    transform: none;
+    transition: none;
+  }
+}

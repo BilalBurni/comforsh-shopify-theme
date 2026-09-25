@@ -1,0 +1,256 @@
+{% liquid
+  comment
+    Locale strings win so the block follows the active language; the section
+    settings are only a fallback. `t` output is already escaped, so the
+    fallbacks are escaped at assign time and never escaped again on output.
+  endcomment
+  assign eyebrow = 'comforsh.newsletter.eyebrow' | t
+  assign heading = 'comforsh.newsletter.heading' | t
+  assign text = 'comforsh.newsletter.text' | t
+  assign email_placeholder = 'comforsh.newsletter.email_placeholder' | t
+  assign button_label = 'comforsh.newsletter.button' | t
+  assign success_message = 'comforsh.newsletter.success' | t
+
+  if eyebrow == 'comforsh.newsletter.eyebrow' or eyebrow contains 'Translation missing'
+    assign eyebrow = section.settings.eyebrow | escape
+  endif
+  if heading == 'comforsh.newsletter.heading' or heading contains 'Translation missing'
+    assign heading = section.settings.heading | escape
+  endif
+  if text == 'comforsh.newsletter.text' or text contains 'Translation missing'
+    assign text = section.settings.text | escape
+  endif
+  if email_placeholder == 'comforsh.newsletter.email_placeholder' or email_placeholder contains 'Translation missing'
+    assign email_placeholder = section.settings.email_placeholder | escape
+  endif
+  if button_label == 'comforsh.newsletter.button' or button_label contains 'Translation missing'
+    assign button_label = section.settings.button_label | escape
+  endif
+  if success_message == 'comforsh.newsletter.success' or success_message contains 'Translation missing'
+    assign success_message = section.settings.success_message | escape
+  endif
+%}
+
+<section
+  class="hc-newsletter"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width hc-newsletter__inner" data-cf-reveal="up">
+    {% if eyebrow != blank %}
+      <p class="hc-newsletter__eyebrow">{{ eyebrow }}</p>
+    {% endif %}
+    {% if heading != blank %}
+      <h2 class="hc-newsletter__heading">{{ heading }}</h2>
+    {% endif %}
+    {% if text != blank %}
+      <p class="hc-newsletter__text">{{ text }}</p>
+    {% endif %}
+
+    {% form 'customer', class: 'hc-newsletter__form' %}
+      <input type="hidden" name="contact[tags]" value="newsletter">
+      <div class="hc-newsletter__row">
+        <label class="visually-hidden" for="NewsletterEmail-{{ section.id }}">
+          {{ email_placeholder }}
+        </label>
+        <input
+          id="NewsletterEmail-{{ section.id }}"
+          type="email"
+          name="contact[email]"
+          class="hc-newsletter__input"
+          value="{{ form.email }}"
+          placeholder="{{ email_placeholder }}"
+          required
+          autocomplete="email"
+        >
+        <button type="submit" class="hc-newsletter__btn">
+          {{ button_label }}
+        </button>
+      </div>
+
+      {% if form.posted_successfully? %}
+        <p class="hc-newsletter__success" role="status">
+          {{ success_message }}
+        </p>
+      {% endif %}
+
+      {% if form.errors %}
+        <p class="hc-newsletter__error" role="alert">
+          {{ form.errors.translated_fields.email | capitalize }}
+          {{ form.errors.messages.invalid }}
+        </p>
+      {% endif %}
+    {% endform %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .hc-newsletter {
+    background: #ffffff;
+    border-top: 1px solid #ececec;
+  }
+
+  .hc-newsletter__inner {
+    max-width: 640px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+    text-align: center;
+  }
+
+  .hc-newsletter__eyebrow {
+    margin: 0 0 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #822c1d;
+  }
+
+  .hc-newsletter__heading {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .hc-newsletter__text {
+    margin: 0 auto 1.75rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #6b7280;
+    max-width: 42ch;
+  }
+
+  .hc-newsletter__form {
+    width: 100%;
+  }
+
+  .hc-newsletter__row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .hc-newsletter__row {
+      flex-direction: row;
+      gap: 0;
+    }
+  }
+
+  .hc-newsletter__input {
+    flex: 1;
+    width: 100%;
+    min-height: 52px;
+    padding: 0.9rem 1.1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 2px;
+    background: #faf9f6;
+    color: #1f2937;
+    font-size: 1rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .hc-newsletter__input {
+      border-radius: 2px 0 0 2px;
+      border-right: none;
+    }
+  }
+
+  .hc-newsletter__input:focus {
+    outline: 2px solid rgba(17, 17, 17, 0.35);
+    outline-offset: 0;
+  }
+
+  .hc-newsletter__btn {
+    white-space: nowrap;
+  }
+
+  @media screen and (min-width: 750px) {
+    .hc-newsletter__btn {
+      border-radius: 0 4px 4px 0 !important;
+    }
+  }
+
+  .hc-newsletter__success {
+    margin: 1rem 0 0;
+    color: #111111;
+    font-weight: 600;
+  }
+
+  .hc-newsletter__error {
+    margin: 1rem 0 0;
+    color: #b91c1c;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Newsletter Signup",
+  "tag": "section",
+  "class": "section-newsletter-signup",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "STAY IN THE LOOP"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Subscribe to our newsletter"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "Get news on product launches and everyday comfort tips, straight to your inbox."
+    },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Email placeholder",
+      "default": "Email address"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Sign up"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks! Please confirm your subscription."
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter Signup"
+    }
+  ]
+}
+{% endschema %}

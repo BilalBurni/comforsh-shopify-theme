@@ -1,0 +1,135 @@
+{%- comment -%}
+  Premium Catalog megamenu (desktop) + Cedar Sense–style mobile drawer list.
+  @param {string} mode - desktop | mobile
+  @param {string} [parent_handle] - parent nav handle for ids
+{%- endcomment -%}
+{%- liquid
+  assign parent_handle = parent_handle | default: 'catalog'
+  assign mode = mode | default: 'desktop'
+
+  assign view_all_label = 'comforsh.nav.view_all' | t
+  if view_all_label == 'comforsh.nav.view_all' or view_all_label contains 'Translation missing'
+    assign view_all_label = 'View all products'
+  endif
+
+  assign shop_label = 'comforsh.nav.shop_category' | t
+  if shop_label == 'comforsh.nav.shop_category' or shop_label contains 'Translation missing'
+    assign shop_label = 'Shop collection'
+  endif
+-%}
+
+{%- comment -%} handle|Title|t_key|sub1;sub2;sub3 {%- endcomment -%}
+{%- capture catalog_rows -%}
+back-posture-support|Back & Posture Support|comforsh.categories.back_posture|Back stretchers;Posture braces;Lumbar support
+sleep-pregnancy-comfort|Sleep & Pregnancy Comfort|comforsh.categories.sleep_pregnancy|Pregnancy pillows;Cervical pillows;Leg pillows
+seat-cushions|Seat Cushions (Office & Home)|comforsh.categories.seat_cushions|Memory foam cushions;Gel seat pads;Coccyx cushions
+bike-motorcycle-outdoor-seating|Bike, Motorcycle & Outdoor Seating|comforsh.categories.bike_outdoor|Gel bike covers;Motorcycle air pads;Stadium cushions
+desk-wrist-comfort|Desk & Wrist Comfort|comforsh.categories.desk_wrist|Armrest extensions;Wrist rests;Foot hammocks;Laptop stands
+neck-travel-comfort|Neck & Travel Comfort|comforsh.categories.neck_travel|Travel foot hammocks;Neck support pillows;Car headrest cushions
+pain-relief-massage|Pain Relief & Massage|comforsh.categories.pain_massage|Neck massagers;Heating pads;Foam rollers
+{%- endcapture -%}
+
+{%- assign catalog_rows = catalog_rows | strip | newline_to_br | split: '<br />' -%}
+
+{%- if mode == 'desktop' -%}
+  <div class="cfp-mega">
+    <div class="cfp-mega__grid">
+      {%- for row in catalog_rows -%}
+        {%- assign row = row | strip -%}
+        {%- if row != blank -%}
+          {%- assign parts = row | split: '|' -%}
+          {%- assign handle = parts[0] | strip -%}
+          {%- assign fallback = parts[1] | strip -%}
+          {%- assign t_key = parts[2] | strip -%}
+          {%- assign subs_raw = parts[3] | strip -%}
+          {%- assign item_title = t_key | t -%}
+          {%- if item_title == t_key or item_title contains 'Translation missing' -%}
+            {%- assign item_title = fallback -%}
+          {%- endif -%}
+          {%- assign item_title = item_title | replace: '&amp;', '&' | replace: '&#38;', '&' -%}
+          {%- assign item_collection = collections[handle] -%}
+          {%- if item_collection != blank -%}
+            {%- assign item_url = item_collection.url -%}
+          {%- else -%}
+            {%- assign item_url = '/collections/' | append: handle -%}
+          {%- endif -%}
+          {%- assign subs = subs_raw | split: ';' -%}
+
+          <div class="cfp-mega__col">
+            <a class="cfp-mega__heading" href="{{ item_url }}">{{ item_title }}</a>
+            <ul class="cfp-mega__list list-unstyled" role="list">
+              {%- for sub in subs -%}
+                {%- assign sub_label = sub | strip -%}
+                {%- if sub_label != blank -%}
+                  <li>
+                    <a class="cfp-mega__link" href="{{ item_url }}">{{ sub_label }}</a>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+              <li>
+                <a class="cfp-mega__link cfp-mega__link--shop" href="{{ item_url }}">{{ shop_label }} →</a>
+              </li>
+            </ul>
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    <div class="cfp-mega__footer">
+      <a class="cfp-mega__all" href="{{ routes.all_products_collection_url }}">{{ view_all_label }} →</a>
+    </div>
+  </div>
+{%- else -%}
+  <li class="cfp-drawer-cat__viewall">
+    <a
+      id="HeaderDrawer-{{ parent_handle }}-all"
+      href="{{ routes.all_products_collection_url }}"
+      class="cfp-drawer-cat__viewall-link"
+    >
+      {{ view_all_label }}
+    </a>
+  </li>
+
+  {%- for row in catalog_rows -%}
+    {%- assign row = row | strip -%}
+    {%- if row != blank -%}
+      {%- assign parts = row | split: '|' -%}
+      {%- assign handle = parts[0] | strip -%}
+      {%- assign fallback = parts[1] | strip -%}
+      {%- assign t_key = parts[2] | strip -%}
+      {%- assign subs_raw = parts[3] | strip -%}
+      {%- assign item_title = t_key | t -%}
+      {%- if item_title == t_key or item_title contains 'Translation missing' -%}
+        {%- assign item_title = fallback -%}
+      {%- endif -%}
+      {%- assign item_title = item_title | replace: '&amp;', '&' | replace: '&#38;', '&' -%}
+      {%- assign item_collection = collections[handle] -%}
+      {%- if item_collection != blank -%}
+        {%- assign item_url = item_collection.url -%}
+      {%- else -%}
+        {%- assign item_url = '/collections/' | append: handle -%}
+      {%- endif -%}
+      {%- assign subs = subs_raw | split: ';' -%}
+
+      <li class="cfp-drawer-cat__group">
+        <a
+          id="HeaderDrawer-{{ parent_handle }}-{{ handle }}"
+          href="{{ item_url }}"
+          class="cfp-drawer-cat__heading"
+        >
+          {{ item_title }}
+        </a>
+        <ul class="cfp-drawer-cat__subs list-unstyled" role="list">
+          {%- for sub in subs -%}
+            {%- assign sub_label = sub | strip -%}
+            {%- if sub_label != blank -%}
+              <li>
+                <a class="cfp-drawer-cat__sublink" href="{{ item_url }}">{{ sub_label }}</a>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}

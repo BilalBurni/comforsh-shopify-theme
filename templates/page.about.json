@@ -1,0 +1,36 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-about",
+      "settings": {
+        "eyebrow": "Unsere Marke",
+        "title": "Über Comforsh",
+        "subtitle": "Ergonomischer Komfort für Zuhause und Büro, durchdacht gemacht und für den täglichen Gebrauch gebaut.",
+        "story_heading": "Komfort, der mitdenkt",
+        "story_text": "<p>Comforsh stellt ergonomische Produkte her, die den Rücken entlasten und den Alltag leichter machen. Von Kissen und Sitzkissen bis hin zu Massage- und Haltungshilfen entwickeln wir Lösungen für mehr Wohlbefinden zu Hause und bei der Arbeit.</p><p>Wir setzen auf klares Design, geprüfte Materialien und einen Kundenservice, der wirklich weiterhilft.</p>",
+        "value_1_title": "Ergonomie zuerst",
+        "value_1_text": "Jedes Produkt ist auf Haltung, Entlastung und nachhaltigen Komfort ausgelegt.",
+        "value_2_title": "Alltagstauglich",
+        "value_2_text": "Einfach zu nutzen, langlebig und für echte Alltagssituationen gemacht.",
+        "value_3_title": "Fairer Service",
+        "value_3_text": "Schneller Versand, transparente Kommunikation und 30 Tage Geld-zurück-Garantie.",
+        "cta_label": "Produkte entdecken",
+        "cta_link": "shopify://collections/all",
+        "padding_top": 0,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

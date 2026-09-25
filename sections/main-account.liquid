@@ -1,0 +1,432 @@
+{%- comment -%}
+  Classic customer account dashboard.
+  Requires Settings → Customer accounts → Classic customer accounts.
+{%- endcomment -%}
+
+<section
+  class="cfp-dash"
+  style="
+    --cfp-dash-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-dash-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-dash__inner">
+    <header class="cfp-dash__header">
+      {% if section.settings.eyebrow != blank %}
+        <p class="cfp-dash__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      <h1 class="cfp-dash__title">
+        {% if customer.first_name != blank %}
+          {{ section.settings.welcome_prefix | escape }} {{ customer.first_name | escape }}
+        {% else %}
+          {{ section.settings.heading | escape }}
+        {% endif %}
+      </h1>
+      {% if section.settings.subtitle != blank %}
+        <p class="cfp-dash__sub">{{ section.settings.subtitle | escape }}</p>
+      {% endif %}
+      <a class="cfp-dash__logout" href="{{ routes.account_logout_url }}">
+        {{ section.settings.logout_label | escape }}
+      </a>
+    </header>
+
+    <div class="cfp-dash__grid">
+      <div class="cfp-dash__panel">
+        <div class="cfp-dash__panel-head">
+          <h2 class="cfp-dash__panel-title">{{ section.settings.orders_heading | escape }}</h2>
+        </div>
+
+        {% paginate customer.orders by 10 %}
+          {% if customer.orders.size > 0 %}
+            <ul class="cfp-dash__orders">
+              {% for order in customer.orders %}
+                <li class="cfp-dash__order">
+                  <div class="cfp-dash__order-main">
+                    <a class="cfp-dash__order-id" href="{{ order.customer_url }}">
+                      {{ section.settings.order_label | escape }} {{ order.name }}
+                    </a>
+                    <p class="cfp-dash__order-meta">
+                      {{ order.created_at | date: format: 'date' }}
+                      · {{ order.financial_status_label }}
+                      {% if order.fulfillment_status_label != blank %}
+                        · {{ order.fulfillment_status_label }}
+                      {% endif %}
+                    </p>
+                  </div>
+                  <div class="cfp-dash__order-side">
+                    <p class="cfp-dash__order-total">{{ order.total_price | money }}</p>
+                    <a class="cfp-dash__btn" href="{{ order.customer_url }}">
+                      {{ section.settings.view_order_label | escape }}
+                    </a>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+            {% if paginate.pages > 1 %}
+              <div class="cfp-dash__paginate">
+                {{ paginate | default_pagination }}
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="cfp-dash__empty">
+              <p>{{ section.settings.empty_orders | escape }}</p>
+              <a class="cfp-dash__btn cfp-dash__btn--primary" href="{{ routes.all_products_collection_url }}">
+                {{ section.settings.shop_label | escape }}
+              </a>
+            </div>
+          {% endif %}
+        {% endpaginate %}
+      </div>
+
+      <aside class="cfp-dash__panel cfp-dash__panel--side">
+        <div class="cfp-dash__panel-head">
+          <h2 class="cfp-dash__panel-title">{{ section.settings.addresses_heading | escape }}</h2>
+          <a class="cfp-dash__link" href="{{ routes.account_addresses_url }}">
+            {{ section.settings.manage_addresses_label | escape }}
+          </a>
+        </div>
+
+        {% if customer.default_address != blank %}
+          <div class="cfp-dash__address">
+            {{ customer.default_address | format_address }}
+          </div>
+          <a class="cfp-dash__btn" href="{{ routes.account_addresses_url }}">
+            {{ section.settings.edit_address_label | escape }}
+          </a>
+        {% else %}
+          <p class="cfp-dash__empty-text">{{ section.settings.empty_addresses | escape }}</p>
+          <a class="cfp-dash__btn cfp-dash__btn--primary" href="{{ routes.account_addresses_url }}">
+            {{ section.settings.add_address_label | escape }}
+          </a>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-dash {
+    --cfp-bg: #faf9f6;
+    --cfp-text: #1f2937;
+    --cfp-sage: #822c1d;
+    --cfp-sage-hover: #6b2317;
+    --cfp-radius: 12px;
+    background: var(--cfp-bg);
+    color: var(--cfp-text);
+    padding: var(--cfp-dash-pad-top, 64px) 0 var(--cfp-dash-pad-bottom, 80px);
+  }
+
+  .cfp-dash__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-dash__header {
+    margin-bottom: 2rem;
+  }
+
+  .cfp-dash__eyebrow {
+    margin: 0 0 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cfp-sage);
+  }
+
+  .cfp-dash__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.75rem, 3vw, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfp-dash__sub {
+    margin: 0 0 1rem;
+    color: #6b7280;
+    max-width: 40rem;
+    line-height: 1.55;
+  }
+
+  .cfp-dash__logout {
+    display: inline-flex;
+    color: var(--cfp-sage);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  .cfp-dash__logout:hover {
+    text-decoration: underline;
+  }
+
+  .cfp-dash__grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-dash__grid {
+      grid-template-columns: 1.6fr 0.9fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+  }
+
+  .cfp-dash__panel {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: var(--cfp-radius);
+    padding: 1.5rem;
+  }
+
+  .cfp-dash__panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.15rem;
+  }
+
+  .cfp-dash__panel-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfp-dash__link {
+    color: var(--cfp-sage);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .cfp-dash__orders {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .cfp-dash__order {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid #ececec;
+    border-radius: var(--cfp-radius);
+    background: #faf9f6;
+  }
+
+  .cfp-dash__order-id {
+    color: #111827;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .cfp-dash__order-id:hover {
+    color: var(--cfp-sage);
+  }
+
+  .cfp-dash__order-meta,
+  .cfp-dash__empty-text {
+    margin: 0.35rem 0 0;
+    color: #6b7280;
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .cfp-dash__order-side {
+    display: grid;
+    justify-items: end;
+    gap: 0.55rem;
+  }
+
+  .cfp-dash__order-total {
+    margin: 0;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfp-dash__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 0.55rem 1rem;
+    border-radius: var(--cfp-radius);
+    border: 1px solid var(--cfp-sage);
+    color: var(--cfp-sage);
+    background: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .cfp-dash__btn:hover {
+    background: #eef2f0;
+  }
+
+  .cfp-dash__btn--primary {
+    background: var(--cfp-sage);
+    color: #fff;
+  }
+
+  .cfp-dash__btn--primary:hover {
+    background: var(--cfp-sage-hover);
+    color: #fff;
+  }
+
+  .cfp-dash__address {
+    color: #374151;
+    line-height: 1.55;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+
+  .cfp-dash__address p {
+    margin: 0;
+  }
+
+  .cfp-dash__empty {
+    text-align: center;
+    padding: 1.5rem 0.5rem;
+    display: grid;
+    gap: 1rem;
+    justify-items: center;
+    color: #6b7280;
+  }
+
+  .cfp-dash__paginate {
+    margin-top: 1.25rem;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Account",
+  "tag": "section",
+  "class": "section-main-account",
+  "enabled_on": {
+    "templates": ["customers/account"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Kundenkonto"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Fallback heading",
+      "default": "My account"
+    },
+    {
+      "type": "text",
+      "id": "welcome_prefix",
+      "label": "Welcome prefix",
+      "default": "Hallo"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Here you will find your orders and saved addresses."
+    },
+    {
+      "type": "text",
+      "id": "logout_label",
+      "label": "Logout label",
+      "default": "Abmelden"
+    },
+    {
+      "type": "text",
+      "id": "orders_heading",
+      "label": "Orders heading",
+      "default": "Bestellhistorie"
+    },
+    {
+      "type": "text",
+      "id": "order_label",
+      "label": "Order label",
+      "default": "Order"
+    },
+    {
+      "type": "text",
+      "id": "view_order_label",
+      "label": "View order label",
+      "default": "View order"
+    },
+    {
+      "type": "text",
+      "id": "empty_orders",
+      "label": "Empty orders text",
+      "default": "You have no orders yet."
+    },
+    {
+      "type": "text",
+      "id": "shop_label",
+      "label": "Shop CTA label",
+      "default": "Shop now"
+    },
+    {
+      "type": "text",
+      "id": "addresses_heading",
+      "label": "Addresses heading",
+      "default": "Adressen"
+    },
+    {
+      "type": "text",
+      "id": "manage_addresses_label",
+      "label": "Manage addresses label",
+      "default": "Verwalten"
+    },
+    {
+      "type": "text",
+      "id": "edit_address_label",
+      "label": "Edit address label",
+      "default": "Adresse bearbeiten"
+    },
+    {
+      "type": "text",
+      "id": "empty_addresses",
+      "label": "Empty addresses text",
+      "default": "Noch keine Adresse gespeichert."
+    },
+    {
+      "type": "text",
+      "id": "add_address_label",
+      "label": "Add address label",
+      "default": "Add address"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

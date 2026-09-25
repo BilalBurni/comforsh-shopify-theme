@@ -1,0 +1,46 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-addresses",
+      "settings": {
+        "back_label": "Zurück zum Konto",
+        "eyebrow": "Kundenkonto",
+        "heading": "Adressen",
+        "subtitle": "Verwalten Sie Ihre Lieferadressen für einen schnelleren Checkout.",
+        "default_label": "Standard",
+        "edit_label": "Bearbeiten",
+        "delete_label": "Löschen",
+        "delete_confirm": "Diese Adresse wirklich löschen?",
+        "edit_heading": "Adresse bearbeiten",
+        "add_heading": "Neue Adresse hinzufügen",
+        "empty_text": "Noch keine Adresse gespeichert.",
+        "first_name_label": "Vorname",
+        "last_name_label": "Nachname",
+        "company_label": "Firma",
+        "address1_label": "Adresse",
+        "address2_label": "Adresszusatz",
+        "city_label": "Stadt",
+        "country_label": "Land",
+        "province_label": "Bundesland",
+        "zip_label": "PLZ",
+        "phone_label": "Telefon",
+        "set_default_label": "Als Standardadresse festlegen",
+        "save_label": "Speichern",
+        "cancel_label": "Abbrechen",
+        "add_label": "Adresse hinzufügen",
+        "padding_top": 64,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": ["main"]
+}

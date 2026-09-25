@@ -1,0 +1,66 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-page-faq",
+      "blocks": {
+        "faq_1": {
+          "type": "faq",
+          "settings": {
+            "question": "Wie lange dauert die Lieferung?",
+            "answer": "<p>In der Regel 2–4 Werktage innerhalb der EU. Ab €50 versandkostenfrei.</p>"
+          }
+        },
+        "faq_2": {
+          "type": "faq",
+          "settings": {
+            "question": "Kann ich ein Produkt zurückgeben?",
+            "answer": "<p>Ja, 30 Tage Geld-zurück-Garantie. Melden Sie sich einfach bei uns und wir wickeln die Rücksendung unkompliziert ab.</p>"
+          }
+        },
+        "faq_3": {
+          "type": "faq",
+          "settings": {
+            "question": "Sind die Materialien sicher?",
+            "answer": "<p>Wir verwenden geprüfte, hochwertige Materialien für den täglichen Gebrauch. Die Pflegehinweise finden Sie auf der jeweiligen Produktseite.</p>"
+          }
+        },
+        "faq_4": {
+          "type": "faq",
+          "settings": {
+            "question": "Wie verfolge ich meine Bestellung?",
+            "answer": "<p>Melden Sie sich in Ihrem Konto an, um den Status Ihrer Bestellung und die Versanddetails zu sehen.</p>"
+          }
+        },
+        "faq_5": {
+          "type": "faq",
+          "settings": {
+            "question": "Wie erstelle ich ein Kundenkonto?",
+            "answer": "<p>Klicken Sie auf Registrieren, geben Sie Ihre Daten ein und bestätigen Sie Ihre E-Mail-Adresse. Danach können Sie Ihre Bestellungen und Adressen verwalten.</p>"
+          }
+        }
+      },
+      "block_order": ["faq_1", "faq_2", "faq_3", "faq_4", "faq_5"],
+      "settings": {
+        "eyebrow": "Hilfe",
+        "title": "Häufige Fragen",
+        "subtitle": "Antworten zu Versand, Rückgabe, Produkten und Ihrem Comforsh-Konto.",
+        "open_first": true,
+        "cta_text": "Noch Fragen? Wir helfen gerne.",
+        "cta_label": "Kontakt aufnehmen",
+        "cta_link": "shopify://pages/contact",
+        "padding_top": 0,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": ["main"]
+}

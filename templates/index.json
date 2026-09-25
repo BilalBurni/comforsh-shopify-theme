@@ -1,0 +1,650 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "video_hero": {
+      "type": "comforsh-video-hero",
+      "settings": {
+        "video": "shopify://files/videos/videoplayback.mp4",
+        "video_url": "",
+        "video_url_2": "",
+        "video_url_3": "",
+        "scene_seconds": 7,
+        "poster_image": "shopify://shop_images/resize_comforsh_main_picture.jpg",
+        "height": "full",
+        "eyebrow": "ERGONOMISCHER KOMFORT",
+        "heading": "KOMFORT, WO AUCH IMMER DU BIST.",
+        "text": "Premium-Komfortprodukte für Haltung, Entspannung und alltagstaugliches Wohlbefinden.",
+        "urgency": "Kostenloser Versand ab 50 € · 30 Tage Geld-zurück-Garantie",
+        "button_label": "JETZT SHOPPEN",
+        "button_link": "shopify://collections/all"
+      }
+    },
+    "category_grid_section": {
+      "type": "category-grid",
+      "blocks": {
+        "cat_1": {
+          "type": "category_card",
+          "settings": {
+            "collection": "back-posture-support",
+            "title": "Rücken- & Haltungshilfe",
+            "image": "shopify://shop_images/img.webp",
+            "link": "/collections/back-posture-support"
+          }
+        },
+        "cat_2": {
+          "type": "category_card",
+          "settings": {
+            "collection": "sleep-pregnancy-comfort",
+            "title": "Schlaf- & Schwangerschaftskomfort",
+            "image": "shopify://shop_images/Sleep-Pregnancy-Comfort_1.webp",
+            "link": "/collections/sleep-pregnancy-comfort"
+          }
+        },
+        "cat_3": {
+          "type": "category_card",
+          "settings": {
+            "collection": "seat-cushions",
+            "title": "Sitzkissen (Büro & Zuhause)",
+            "image": "shopify://shop_images/S093d4cdcec544cbcafc53a8619ec8de6J.webp",
+            "link": "/collections/seat-cushions"
+          }
+        },
+        "cat_4": {
+          "type": "category_card",
+          "settings": {
+            "collection": "bike-motorcycle-outdoor-seating",
+            "title": "Fahrrad-, Motorrad- & Outdoor-Sitze",
+            "image": "shopify://shop_images/Bike-Motorcycle.webp",
+            "link": "/collections/bike-motorcycle-outdoor-seating"
+          }
+        },
+        "cat_5": {
+          "type": "category_card",
+          "settings": {
+            "collection": "desk-wrist-comfort",
+            "title": "Schreibtisch- & Handgelenkskomfort",
+            "image": "shopify://shop_images/S28c45e0549d64a6395241d47baeb2b12V.webp",
+            "link": "/collections/desk-wrist-comfort"
+          }
+        },
+        "cat_6": {
+          "type": "category_card",
+          "settings": {
+            "collection": "neck-travel-comfort",
+            "title": "Nacken- & Reisekomfort",
+            "image": "shopify://shop_images/Neck-Travel-Comfort.jpg",
+            "link": "/collections/neck-travel-comfort"
+          }
+        },
+        "cat_7": {
+          "type": "category_card",
+          "settings": {
+            "collection": "pain-relief-massage",
+            "title": "Schmerzlinderung & Massage",
+            "image": "shopify://shop_images/Sbf1fac93d91a40e5a342f103120981cdU.webp",
+            "link": "/collections/pain-relief-massage"
+          }
+        }
+      },
+      "block_order": [
+        "cat_1",
+        "cat_2",
+        "cat_3",
+        "cat_4",
+        "cat_5",
+        "cat_6",
+        "cat_7"
+      ],
+      "settings": {
+        "title": "NACH KATEGORIE SHOPPEN",
+        "subtitle": "Ergonomische Lösungen für Haltung, Schlaf, Arbeit und Reisen",
+        "columns_desktop": 4,
+        "autoplay": true,
+        "autoplay_speed": 4,
+        "prev_label": "Zurück",
+        "next_label": "Weiter",
+        "show_view_all": true,
+        "view_all_label": "ALLE ANSEHEN",
+        "view_all_link": "shopify://collections/all",
+        "padding_top": 72,
+        "padding_bottom": 72
+      }
+    },
+    "logo_slider_section": {
+      "type": "comforsh-logo-slider",
+      "blocks": {
+        "logo_1": {
+          "type": "logo",
+          "settings": {
+            "title": "Haltung",
+            "collection": "",
+            "link": "/collections/back-posture-support"
+          }
+        },
+        "logo_2": {
+          "type": "logo",
+          "settings": {
+            "title": "Schlaf",
+            "collection": "",
+            "link": "/collections/sleep-pregnancy-comfort"
+          }
+        },
+        "logo_3": {
+          "type": "logo",
+          "settings": {
+            "title": "Sitz",
+            "collection": "",
+            "link": "/collections/seat-cushions"
+          }
+        },
+        "logo_4": {
+          "type": "logo",
+          "settings": {
+            "title": "Outdoor",
+            "collection": "",
+            "link": "/collections/bike-motorcycle-outdoor-seating"
+          }
+        },
+        "logo_5": {
+          "type": "logo",
+          "settings": {
+            "title": "Schreibtisch",
+            "collection": "",
+            "link": "/collections/desk-wrist-comfort"
+          }
+        },
+        "logo_6": {
+          "type": "logo",
+          "settings": {
+            "title": "Reisen",
+            "collection": "",
+            "link": "/collections/neck-travel-comfort"
+          }
+        },
+        "logo_7": {
+          "type": "logo",
+          "settings": {
+            "title": "Massage",
+            "collection": "",
+            "link": "/collections/pain-relief-massage"
+          }
+        }
+      },
+      "block_order": [
+        "logo_1",
+        "logo_2",
+        "logo_3",
+        "logo_4",
+        "logo_5",
+        "logo_6",
+        "logo_7"
+      ],
+      "disabled": true,
+      "settings": {
+        "title": "NACH SERIE SHOPPEN",
+        "subtitle": "Schnellzugriff auf alle Kollektionen",
+        "prev_label": "Zurück",
+        "next_label": "Weiter",
+        "autoplay": true,
+        "autoplay_speed": 4,
+        "padding_top": 56,
+        "padding_bottom": 40
+      }
+    },
+    "featured_collection_section": {
+      "type": "comfort-products",
+      "settings": {
+        "t_key": "comforsh.series.home",
+        "title": "HOME KOLLEKTION",
+        "subtitle": "Ergonomischer Komfort für den Alltag",
+        "collection": "sleep-pregnancy-comfort",
+        "products_to_show": 4,
+        "show_save_badge": true,
+        "save_badge_prefix": "SPAREN",
+        "sold_out_badge": "AUSVERKAUFT",
+        "choose_label": "Optionen",
+        "atc_label": "In den Warenkorb",
+        "empty_text": "Produkte folgen in Kürze.",
+        "show_view_all": true,
+        "view_all_label": "Alle ansehen",
+        "view_all_link": "shopify://collections/sleep-pregnancy-comfort",
+        "padding_top": 64,
+        "padding_bottom": 48
+      }
+    },
+    "lookbook_section": {
+      "type": "comforsh-lookbook",
+      "blocks": {
+        "look_1": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/S640fc0977f3c4530b9cf39ce41640c8cC.webp",
+            "link": "/collections/ergonomische-sitzkissen",
+            "alt": "Komfort für Zuhause",
+            "fallback_image_url": ""
+          }
+        },
+        "look_2": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/Desk-Wrist-Comfort.jpg",
+            "link": "/products/anklemmbare-armlehne-schreibtisch-drehbar-mauspad",
+            "alt": "Komfort fürs Büro",
+            "fallback_image_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "look_1",
+        "look_2"
+      ],
+      "settings": {
+        "gap": 12,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "featured_collection_2": {
+      "type": "comfort-products",
+      "settings": {
+        "t_key": "comforsh.series.office",
+        "title": "BÜRO KOLLEKTION",
+        "subtitle": "Unterstützender Komfort für Konzentration und lange Arbeitstage",
+        "collection": "desk-wrist-comfort",
+        "products_to_show": 4,
+        "show_save_badge": true,
+        "save_badge_prefix": "SPAREN",
+        "sold_out_badge": "AUSVERKAUFT",
+        "choose_label": "Optionen",
+        "atc_label": "In den Warenkorb",
+        "empty_text": "Produkte folgen in Kürze.",
+        "show_view_all": true,
+        "view_all_label": "Alle ansehen",
+        "view_all_link": "shopify://collections/desk-wrist-comfort",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "lookbook_travel": {
+      "type": "comforsh-lookbook",
+      "blocks": {
+        "look_1": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/Neck-Travel-Comfort.jpg",
+            "link": "/collections/neck-travel-comfort",
+            "alt": "Reisekomfort",
+            "fallback_image_url": ""
+          }
+        },
+        "look_2": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/comforsh-seating-grid.png",
+            "link": "/collections/bike-motorcycle-outdoor-seating",
+            "alt": "Sitze für Fahrrad, Motorrad, Pferd und Boot",
+            "fallback_image_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "look_1",
+        "look_2"
+      ],
+      "settings": {
+        "gap": 12,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "travel_collection": {
+      "type": "comfort-products",
+      "settings": {
+        "t_key": "comforsh.series.travel",
+        "title": "REISE KOLLEKTION",
+        "subtitle": "Kompakter Komfort für Reisen, Flüge und unterwegs",
+        "collection": "neck-travel-comfort",
+        "products_to_show": 4,
+        "show_save_badge": true,
+        "save_badge_prefix": "SPAREN",
+        "sold_out_badge": "AUSVERKAUFT",
+        "choose_label": "Optionen",
+        "atc_label": "In den Warenkorb",
+        "empty_text": "Produkte folgen in Kürze.",
+        "show_view_all": true,
+        "view_all_label": "Alle ansehen",
+        "view_all_link": "shopify://collections/neck-travel-comfort",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
+    },
+    "lookbook_wellness": {
+      "type": "comforsh-lookbook",
+      "blocks": {
+        "look_1": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/S39ba3201c244421da0f1a39c80f67744K.webp",
+            "link": "/collections/pain-relief-massage",
+            "alt": "Wellness-Ritual",
+            "fallback_image_url": ""
+          }
+        },
+        "look_2": {
+          "type": "image",
+          "settings": {
+            "image": "shopify://shop_images/S1f2b48f52a0a45eab1f1fd90ce009d0ed.webp",
+            "link": "/collections/sleep-pregnancy-comfort",
+            "alt": "Erholung zu Hause",
+            "fallback_image_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "look_1",
+        "look_2"
+      ],
+      "settings": {
+        "gap": 12,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "wellness_collection": {
+      "type": "comfort-products",
+      "settings": {
+        "t_key": "comforsh.series.wellness",
+        "title": "WELLNESS KOLLEKTION",
+        "subtitle": "Erholung, Regeneration und Wohlbefinden im Alltag",
+        "collection": "pain-relief-massage",
+        "products_to_show": 4,
+        "show_save_badge": true,
+        "save_badge_prefix": "SPAREN",
+        "sold_out_badge": "AUSVERKAUFT",
+        "choose_label": "Optionen",
+        "atc_label": "In den Warenkorb",
+        "empty_text": "Produkte folgen in Kürze.",
+        "show_view_all": true,
+        "view_all_label": "Alle ansehen",
+        "view_all_link": "shopify://collections/pain-relief-massage",
+        "padding_top": 48,
+        "padding_bottom": 72
+      }
+    },
+    "promo_banner_section": {
+      "type": "promo-banner",
+      "settings": {
+        "eyebrow": "",
+        "heading": "HI, WIR SIND COMFORSH",
+        "text": "Ergonomischer Komfort für Zuhause, Büro und Alltag. Haltung, Erholung und Wohlbefinden — für echte Tage.",
+        "button_label": "JETZT SHOPPEN",
+        "button_link": "shopify://collections/all",
+        "video_url": "",
+        "image": "shopify://shop_images/comforsh-outdoor-seating-lake.png",
+        "fallback_image_url": "",
+        "overlay_opacity": 48,
+        "min_height": 560
+      }
+    },
+    "testimonials_section": {
+      "type": "testimonials",
+      "blocks": {
+        "rev_1": {
+          "type": "review",
+          "settings": {
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author_name": "",
+            "product_image_url": "",
+            "verified": false
+          }
+        },
+        "rev_2": {
+          "type": "review",
+          "settings": {
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author_name": "",
+            "product_image_url": "",
+            "verified": false
+          }
+        },
+        "rev_3": {
+          "type": "review",
+          "settings": {
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author_name": "",
+            "product_image_url": "",
+            "verified": false
+          }
+        },
+        "rev_4": {
+          "type": "review",
+          "settings": {
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author_name": "",
+            "product_image_url": "",
+            "verified": false
+          }
+        },
+        "rev_5": {
+          "type": "review",
+          "settings": {
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author_name": "",
+            "product_image_url": "",
+            "verified": false
+          }
+        },
+        "rev_6": {
+          "type": "review",
+          "settings": {
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author_name": "",
+            "product_image_url": "",
+            "verified": false
+          }
+        }
+      },
+      "block_order": [
+        "rev_1",
+        "rev_2",
+        "rev_3",
+        "rev_4",
+        "rev_5",
+        "rev_6"
+      ],
+      "disabled": true,
+      "settings": {
+        "title": "DAS SAGEN UNSERE KUNDEN",
+        "subtitle": "",
+        "prev_label": "Zurück",
+        "next_label": "Weiter",
+        "autoplay": true,
+        "autoplay_speed": 5,
+        "color_scheme": "scheme-1",
+        "padding_top": 72,
+        "padding_bottom": 48
+      }
+    },
+    "trust_bar_section": {
+      "type": "trust-bar",
+      "blocks": {
+        "tb_1": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "shipping",
+            "title": "Kostenloser Versand ab 50 €",
+            "subtext": "EU-Lieferung in 3–7 Werktagen"
+          }
+        },
+        "tb_2": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "guarantee",
+            "title": "30 Tage Geld-zurück",
+            "subtext": "Risikofrei zu Hause testen"
+          }
+        },
+        "tb_3": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "service",
+            "title": "Wir sind rund um die Uhr da",
+            "subtext": "Kontakt per Chat oder E-Mail"
+          }
+        },
+        "tb_4": {
+          "type": "trust_item",
+          "settings": {
+            "icon": "security",
+            "title": "100 % Sichere Zahlung",
+            "subtext": "Sichere Zahlungsmethoden"
+          }
+        }
+      },
+      "block_order": [
+        "tb_1",
+        "tb_2",
+        "tb_3",
+        "tb_4"
+      ],
+      "settings": {
+        "color_scheme": "scheme-1",
+        "padding_top": 40,
+        "padding_bottom": 56
+      }
+    },
+    "newsletter_section": {
+      "type": "newsletter-signup",
+      "settings": {
+        "eyebrow": "BLEIBEN SIE INFORMIERT",
+        "heading": "Newsletter abonnieren",
+        "text": "Neuigkeiten zu Produktlaunches und Tipps für mehr Alltagskomfort — direkt in Ihr Postfach.",
+        "email_placeholder": "E-Mail-Adresse",
+        "button_label": "Anmelden",
+        "success_message": "Danke! Bitte bestätigen Sie Ihre Anmeldung.",
+        "padding_top": 80,
+        "padding_bottom": 80
+      }
+    },
+    "faq_section": {
+      "type": "faq-accordion",
+      "blocks": {
+        "faq_1": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Wie lange dauert die Lieferung?",
+            "answer": "<p>Bestellungen werden innerhalb von 24 Stunden bearbeitet. Der Standardversand mit DHL dauert 2 bis 4 Werktage.</p>"
+          }
+        },
+        "faq_2": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Gibt es ein Rückgaberecht?",
+            "answer": "<p>Ja! Wir bieten 30 Tage Geld-zurück-Garantie, damit Sie das Produkt in Ruhe zu Hause testen können.</p>"
+          }
+        },
+        "faq_3": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Aus welchen Materialien bestehen die Kissen?",
+            "answer": "<p>Unsere Kissen bestehen aus ergonomischem Memory-Schaum mit hoher Dichte und atmungsaktiven, waschbaren Bezügen.</p>"
+          }
+        },
+        "faq_4": {
+          "type": "faq_item",
+          "settings": {
+            "question": "Sind die Bezüge waschbar?",
+            "answer": "<p>Ja, jeder Bezug lässt sich per Reißverschluss abnehmen und bei 30 °C waschen.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "faq_1",
+        "faq_2",
+        "faq_3",
+        "faq_4"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "title": "HÄUFIGE FRAGEN",
+        "subtitle": "Versand, Rückgabe und Komfort — kurz beantwortet",
+        "open_first": false,
+        "cta_text": "Noch Fragen? Wir helfen gerne.",
+        "cta_label": "Kontakt",
+        "cta_link": "/pages/contact",
+        "color_scheme": "scheme-1",
+        "padding_top": 72,
+        "padding_bottom": 88
+      }
+    },
+    "seats_section": {
+      "type": "comfort-products",
+      "settings": {
+        "t_key": "comforsh.series.seats",
+        "title": "ERGONOMISCHE SITZKISSEN",
+        "subtitle": "Entlastung für Rücken und Steißbein – im Büro, zu Hause und unterwegs",
+        "collection": "ergonomische-sitzkissen",
+        "products_to_show": 8,
+        "show_save_badge": true,
+        "save_badge_prefix": "SPAREN",
+        "sold_out_badge": "AUSVERKAUFT",
+        "choose_label": "Optionen",
+        "atc_label": "In den Warenkorb",
+        "empty_text": "Produkte folgen in Kürze.",
+        "show_view_all": true,
+        "view_all_label": "Alle ansehen",
+        "view_all_link": "shopify://collections/ergonomische-sitzkissen",
+        "padding_top": 56,
+        "padding_bottom": 40
+      }
+    },
+    "vehicle_seats_section": {
+      "type": "comfort-products",
+      "settings": {
+        "t_key": "comforsh.series.vehicle_seats",
+        "title": "FAHRRAD-, MOTORRAD-, BOOT- & REITSITZE",
+        "subtitle": "Bequem auf jeder Tour – auf zwei Rädern, auf dem Wasser und im Sattel",
+        "collection": "bike-motorcycle-outdoor-seating",
+        "products_to_show": 8,
+        "show_save_badge": true,
+        "save_badge_prefix": "SPAREN",
+        "sold_out_badge": "AUSVERKAUFT",
+        "choose_label": "Optionen",
+        "atc_label": "In den Warenkorb",
+        "empty_text": "Produkte folgen in Kürze.",
+        "show_view_all": true,
+        "view_all_label": "Alle ansehen",
+        "view_all_link": "shopify://collections/bike-motorcycle-outdoor-seating",
+        "padding_top": 56,
+        "padding_bottom": 40
+      }
+    }
+  },
+  "order": [
+    "video_hero",
+    "seats_section",
+    "vehicle_seats_section",
+    "category_grid_section",
+    "logo_slider_section",
+    "featured_collection_section",
+    "lookbook_section",
+    "featured_collection_2",
+    "lookbook_travel",
+    "travel_collection",
+    "lookbook_wellness",
+    "wellness_collection",
+    "promo_banner_section",
+    "testimonials_section",
+    "trust_bar_section",
+    "newsletter_section",
+    "faq_section"
+  ]
+}

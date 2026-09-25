@@ -1,0 +1,38 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-account",
+      "settings": {
+        "eyebrow": "Kundenkonto",
+        "heading": "Mein Konto",
+        "welcome_prefix": "Hallo",
+        "subtitle": "Hier finden Sie Ihre Bestellungen und gespeicherten Adressen.",
+        "logout_label": "Abmelden",
+        "orders_heading": "Bestellhistorie",
+        "order_label": "Bestellung",
+        "view_order_label": "Bestellung ansehen",
+        "empty_orders": "Sie haben noch keine Bestellungen.",
+        "shop_label": "Jetzt einkaufen",
+        "addresses_heading": "Adressen",
+        "manage_addresses_label": "Verwalten",
+        "edit_address_label": "Adresse bearbeiten",
+        "empty_addresses": "Noch keine Adresse gespeichert.",
+        "add_address_label": "Adresse hinzufügen",
+        "padding_top": 64,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

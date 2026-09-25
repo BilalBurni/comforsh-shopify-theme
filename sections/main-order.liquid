@@ -1,0 +1,419 @@
+{%- comment -%}
+  Classic customer order details.
+  Requires Settings → Customer accounts → Classic customer accounts.
+{%- endcomment -%}
+
+<section
+  class="cfp-order"
+  style="
+    --cfp-order-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-order-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-order__inner">
+    <header class="cfp-order__header">
+      <a class="cfp-order__back" href="{{ routes.account_url }}">← {{ section.settings.back_label | escape }}</a>
+      <h1 class="cfp-order__title">
+        {{ section.settings.heading | escape }} {{ order.name }}
+      </h1>
+      <p class="cfp-order__meta">
+        {{ order.created_at | date: format: 'date_at_time' }}
+        · {{ order.financial_status_label }}
+        {% if order.fulfillment_status_label != blank %}
+          · {{ order.fulfillment_status_label }}
+        {% endif %}
+      </p>
+    </header>
+
+    <div class="cfp-order__grid">
+      <div class="cfp-order__panel">
+        <h2 class="cfp-order__panel-title">{{ section.settings.items_heading | escape }}</h2>
+        <ul class="cfp-order__items">
+          {% for line_item in order.line_items %}
+            <li class="cfp-order__item">
+              <div class="cfp-order__thumb">
+                {% if line_item.image != blank %}
+                  {{
+                    line_item.image
+                    | image_url: width: 160
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '80, 120, 160',
+                      alt: line_item.title
+                  }}
+                {% else %}
+                  {{ 'product-1' | placeholder_svg_tag: 'cfp-order__placeholder' }}
+                {% endif %}
+              </div>
+              <div class="cfp-order__item-copy">
+                <p class="cfp-order__item-title">{{ line_item.title | escape }}</p>
+                {% unless line_item.product.has_only_default_variant %}
+                  <p class="cfp-order__item-variant">{{ line_item.variant.title | escape }}</p>
+                {% endunless %}
+                <p class="cfp-order__item-qty">
+                  {{ section.settings.qty_label | escape }}: {{ line_item.quantity }}
+                </p>
+              </div>
+              <p class="cfp-order__item-price">{{ line_item.final_line_price | money }}</p>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <aside class="cfp-order__side">
+        <div class="cfp-order__panel">
+          <h2 class="cfp-order__panel-title">{{ section.settings.summary_heading | escape }}</h2>
+          <dl class="cfp-order__summary">
+            <div>
+              <dt>{{ section.settings.subtotal_label | escape }}</dt>
+              <dd>{{ order.line_items_subtotal_price | money }}</dd>
+            </div>
+            {% for discount_application in order.cart_level_discount_applications %}
+              <div>
+                <dt>{{ section.settings.discount_label | escape }} ({{ discount_application.title | escape }})</dt>
+                <dd>-{{ discount_application.total_allocated_amount | money }}</dd>
+              </div>
+            {% endfor %}
+            <div>
+              <dt>{{ section.settings.shipping_label | escape }}</dt>
+              <dd>{{ order.shipping_price | money }}</dd>
+            </div>
+            <div>
+              <dt>{{ section.settings.tax_label | escape }}</dt>
+              <dd>{{ order.tax_price | money }}</dd>
+            </div>
+            <div class="cfp-order__summary-total">
+              <dt>{{ section.settings.total_label | escape }}</dt>
+              <dd>{{ order.total_price | money }}</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="cfp-order__panel">
+          <h2 class="cfp-order__panel-title">{{ section.settings.shipping_heading | escape }}</h2>
+          {% if order.shipping_address %}
+            <div class="cfp-order__address">{{ order.shipping_address | format_address }}</div>
+          {% else %}
+            <p class="cfp-order__muted">{{ section.settings.no_shipping | escape }}</p>
+          {% endif %}
+        </div>
+
+        <div class="cfp-order__panel">
+          <h2 class="cfp-order__panel-title">{{ section.settings.billing_heading | escape }}</h2>
+          {% if order.billing_address %}
+            <div class="cfp-order__address">{{ order.billing_address | format_address }}</div>
+          {% else %}
+            <p class="cfp-order__muted">{{ section.settings.no_billing | escape }}</p>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-order {
+    --cfp-bg: #faf9f6;
+    --cfp-text: #1f2937;
+    --cfp-sage: #822c1d;
+    --cfp-radius: 12px;
+    background: var(--cfp-bg);
+    color: var(--cfp-text);
+    padding: var(--cfp-order-pad-top, 64px) 0 var(--cfp-order-pad-bottom, 80px);
+  }
+
+  .cfp-order__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-order__header {
+    margin-bottom: 1.75rem;
+  }
+
+  .cfp-order__back {
+    display: inline-flex;
+    margin-bottom: 0.75rem;
+    color: var(--cfp-sage);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  .cfp-order__title {
+    margin: 0 0 0.4rem;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfp-order__meta,
+  .cfp-order__muted {
+    margin: 0;
+    color: #6b7280;
+    font-size: 0.92rem;
+  }
+
+  .cfp-order__grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-order__grid {
+      grid-template-columns: 1.45fr 0.9fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+  }
+
+  .cfp-order__side {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .cfp-order__panel {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: var(--cfp-radius);
+    padding: 1.35rem 1.4rem;
+  }
+
+  .cfp-order__panel-title {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfp-order__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .cfp-order__item {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 0.9rem;
+    align-items: center;
+    padding: 0.85rem;
+    border: 1px solid #ececec;
+    border-radius: var(--cfp-radius);
+    background: #faf9f6;
+  }
+
+  .cfp-order__thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #eef2f0;
+  }
+
+  .cfp-order__thumb img,
+  .cfp-order__placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cfp-order__item-title {
+    margin: 0;
+    font-weight: 700;
+    color: #111827;
+    font-size: 0.95rem;
+  }
+
+  .cfp-order__item-variant,
+  .cfp-order__item-qty {
+    margin: 0.2rem 0 0;
+    color: #6b7280;
+    font-size: 0.82rem;
+  }
+
+  .cfp-order__item-price {
+    margin: 0;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+  }
+
+  .cfp-order__summary {
+    margin: 0;
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .cfp-order__summary > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.92rem;
+  }
+
+  .cfp-order__summary dt {
+    margin: 0;
+    color: #6b7280;
+  }
+
+  .cfp-order__summary dd {
+    margin: 0;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .cfp-order__summary-total {
+    padding-top: 0.65rem;
+    border-top: 1px solid #ececec;
+    font-size: 1rem !important;
+  }
+
+  .cfp-order__summary-total dt,
+  .cfp-order__summary-total dd {
+    color: #111827;
+    font-weight: 800;
+  }
+
+  .cfp-order__address {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .cfp-order__address p {
+    margin: 0;
+  }
+
+  @media screen and (max-width: 600px) {
+    .cfp-order__item {
+      grid-template-columns: 64px 1fr;
+    }
+
+    .cfp-order__item-price {
+      grid-column: 2;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Order",
+  "tag": "section",
+  "class": "section-main-order",
+  "enabled_on": {
+    "templates": ["customers/order"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "back_label",
+      "label": "Back label",
+      "default": "Back to account"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading prefix",
+      "default": "Order"
+    },
+    {
+      "type": "text",
+      "id": "items_heading",
+      "label": "Items heading",
+      "default": "Bestellte Artikel"
+    },
+    {
+      "type": "text",
+      "id": "qty_label",
+      "label": "Quantity label",
+      "default": "Menge"
+    },
+    {
+      "type": "text",
+      "id": "summary_heading",
+      "label": "Summary heading",
+      "default": "Zusammenfassung"
+    },
+    {
+      "type": "text",
+      "id": "subtotal_label",
+      "label": "Subtotal label",
+      "default": "Zwischensumme"
+    },
+    {
+      "type": "text",
+      "id": "discount_label",
+      "label": "Discount label",
+      "default": "Rabatt"
+    },
+    {
+      "type": "text",
+      "id": "shipping_label",
+      "label": "Shipping label",
+      "default": "Shipping"
+    },
+    {
+      "type": "text",
+      "id": "tax_label",
+      "label": "Tax label",
+      "default": "Steuern"
+    },
+    {
+      "type": "text",
+      "id": "total_label",
+      "label": "Total label",
+      "default": "Gesamt"
+    },
+    {
+      "type": "text",
+      "id": "shipping_heading",
+      "label": "Shipping address heading",
+      "default": "Lieferadresse"
+    },
+    {
+      "type": "text",
+      "id": "billing_heading",
+      "label": "Billing address heading",
+      "default": "Rechnungsadresse"
+    },
+    {
+      "type": "text",
+      "id": "no_shipping",
+      "label": "No shipping address text",
+      "default": "Keine Lieferadresse vorhanden."
+    },
+    {
+      "type": "text",
+      "id": "no_billing",
+      "label": "No billing address text",
+      "default": "Keine Rechnungsadresse vorhanden."
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

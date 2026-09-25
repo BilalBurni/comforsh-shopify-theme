@@ -1,0 +1,27 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-page-policy",
+      "settings": {
+        "eyebrow": "Service",
+        "title": "Versand & Rückgabe",
+        "subtitle": "Klare Informationen zu Lieferung, Kosten und Rückgabe.",
+        "content": "<h2>Versand</h2><p>Kostenloser Versand ab 50 € innerhalb der EU. Die Lieferzeit beträgt in der Regel 7 bis 15 Werktage.</p><h2>Rückgabe</h2><p>Sie haben ein gesetzliches Widerrufsrecht von 14 Tagen. Einzelheiten finden Sie in unserer <a href=\"/pages/widerruf\">Widerrufsbelehrung</a>. Bitte senden Sie die Ware unbenutzt und in der Originalverpackung zurück.</p><h2>Support</h2><p>Fragen? Schreiben Sie an <a href=\"mailto:comforsh@gmail.com\">comforsh@gmail.com</a>. Wir antworten an Werktagen in der Regel innerhalb von 24 Stunden.</p>",
+        "padding_top": 0,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

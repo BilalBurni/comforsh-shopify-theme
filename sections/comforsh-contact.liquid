@@ -1,0 +1,572 @@
+<section
+  class="cfc-contact"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="cfc-contact__hero">
+    <div class="page-width cfc-contact__hero-inner">
+      {% if section.settings.eyebrow != blank %}
+        <p class="cfc-contact__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      <h1 class="cfc-contact__title">{{ section.settings.title | default: 'Kontakt' | escape }}</h1>
+      {% if section.settings.subtitle != blank %}
+        <p class="cfc-contact__sub">{{ section.settings.subtitle | escape }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="page-width cfc-contact__inner">
+    <div class="cfc-contact__grid">
+      <div class="cfc-contact__info">
+        {% if section.settings.info_heading != blank %}
+          <h2 class="cfc-contact__info-heading">{{ section.settings.info_heading | escape }}</h2>
+        {% endif %}
+        {% if section.settings.info_text != blank %}
+          <div class="cfc-contact__info-text">{{ section.settings.info_text }}</div>
+        {% endif %}
+
+        <div class="cfc-contact__cards">
+          {% if section.settings.email != blank %}
+            <a class="cfc-contact__card" href="mailto:{{ section.settings.email }}">
+              <span class="cfc-contact__card-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                  <path d="M3 7l9 6 9-6"></path>
+                </svg>
+              </span>
+              <span class="cfc-contact__card-copy">
+                <span class="cfc-contact__card-label">E-Mail</span>
+                <span class="cfc-contact__card-value">{{ section.settings.email | escape }}</span>
+              </span>
+            </a>
+          {% endif %}
+
+          {% if section.settings.phone != blank %}
+            <a class="cfc-contact__card" href="tel:{{ section.settings.phone | replace: ' ', '' }}">
+              <span class="cfc-contact__card-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M22 16.9v2a2 2 0 01-2.2 2 19.8 19.8 0 01-8.6-3.1 19.5 19.5 0 01-6-6A19.8 19.8 0 013.1 4.2 2 2 0 015.1 2h2a2 2 0 012 1.7c.1.9.3 1.8.6 2.6a2 2 0 01-.5 2.1L8.1 9.5a16 16 0 006.4 6.4l1.1-1.1a2 2 0 012.1-.5c.8.3 1.7.5 2.6.6A2 2 0 0122 16.9z"></path>
+                </svg>
+              </span>
+              <span class="cfc-contact__card-copy">
+                <span class="cfc-contact__card-label">Telefon</span>
+                <span class="cfc-contact__card-value">{{ section.settings.phone | escape }}</span>
+              </span>
+            </a>
+          {% endif %}
+
+          {% if section.settings.hours != blank %}
+            <div class="cfc-contact__card cfc-contact__card--static">
+              <span class="cfc-contact__card-icon" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <circle cx="12" cy="12" r="9"></circle>
+                  <path d="M12 7v5l3 2"></path>
+                </svg>
+              </span>
+              <span class="cfc-contact__card-copy">
+                <span class="cfc-contact__card-label">Servicezeiten</span>
+                <span class="cfc-contact__card-value">{{ section.settings.hours | escape }}</span>
+              </span>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if section.settings.promise_1 != blank or section.settings.promise_2 != blank or section.settings.promise_3 != blank %}
+          <ul class="cfc-contact__promises">
+            {% if section.settings.promise_1 != blank %}
+              <li>{{ section.settings.promise_1 | escape }}</li>
+            {% endif %}
+            {% if section.settings.promise_2 != blank %}
+              <li>{{ section.settings.promise_2 | escape }}</li>
+            {% endif %}
+            {% if section.settings.promise_3 != blank %}
+              <li>{{ section.settings.promise_3 | escape }}</li>
+            {% endif %}
+          </ul>
+        {% endif %}
+      </div>
+
+      <div class="cfc-contact__form-wrap">
+        <h2 class="cfc-contact__form-heading">{{ section.settings.form_heading | default: 'Nachricht schreiben' | escape }}</h2>
+        {% form 'contact', class: 'cfc-contact__form' %}
+          {% if form.posted_successfully? %}
+            <p class="cfc-contact__success">{{ section.settings.success_message | escape }}</p>
+          {% endif %}
+          {% if form.errors %}
+            <div class="cfc-contact__errors">
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
+
+          <div class="cfc-contact__row">
+            <div class="cfc-contact__field">
+              <label for="ContactName-{{ section.id }}">Name</label>
+              <input
+                id="ContactName-{{ section.id }}"
+                type="text"
+                name="contact[name]"
+                placeholder="Ihr Name"
+                value="{% if form.name %}{{ form.name }}{% elsif customer %}{{ customer.name }}{% endif %}"
+                required
+              >
+            </div>
+            <div class="cfc-contact__field">
+              <label for="ContactEmail-{{ section.id }}">E-Mail</label>
+              <input
+                id="ContactEmail-{{ section.id }}"
+                type="email"
+                name="contact[email]"
+                autocomplete="email"
+                placeholder="name@email.de"
+                value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                required
+              >
+            </div>
+          </div>
+
+          <div class="cfc-contact__field">
+            <label for="ContactPhone-{{ section.id }}">Telefon <span>(optional)</span></label>
+            <input
+              id="ContactPhone-{{ section.id }}"
+              type="tel"
+              name="contact[phone]"
+              placeholder="+49 …"
+              value="{% if form.phone %}{{ form.phone }}{% endif %}"
+            >
+          </div>
+          <div class="cfc-contact__field">
+            <label for="ContactBody-{{ section.id }}">Nachricht</label>
+            <textarea
+              id="ContactBody-{{ section.id }}"
+              name="contact[body]"
+              rows="5"
+              placeholder="Wie können wir helfen?"
+              required
+            >{% if form.body %}{{ form.body }}{% endif %}</textarea>
+          </div>
+          <button type="submit" class="cfc-contact__submit">
+            {{ section.settings.button_label | default: 'Nachricht senden' | escape }}
+          </button>
+          <p class="cfc-contact__form-note">{{ section.settings.form_note | default: 'Wir antworten in der Regel innerhalb von 24 Stunden.' | escape }}</p>
+        {% endform %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfc-contact {
+    background: #faf9f6;
+  }
+
+  .cfc-contact__hero {
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 0%, rgba(44, 74, 62, 0.08), transparent 70%),
+      #f3f4f1;
+    border-bottom: 1px solid #e8e8e8;
+    margin-bottom: 2.5rem;
+    padding: 2.75rem 0 2.5rem;
+    text-align: center;
+  }
+
+  .cfc-contact__hero-inner,
+  .cfc-contact__inner {
+    max-width: 1120px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfc-contact__eyebrow {
+    margin: 0 0 0.55rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #822c1d;
+  }
+
+  .cfc-contact__title {
+    margin: 0 0 0.7rem;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #111827;
+  }
+
+  .cfc-contact__sub {
+    margin: 0 auto;
+    max-width: 40ch;
+    color: #4b5563;
+    font-size: 1.08rem;
+    line-height: 1.55;
+  }
+
+  .cfc-contact__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media screen and (min-width: 900px) {
+    .cfc-contact__grid {
+      grid-template-columns: 0.95fr 1.15fr;
+      gap: 2.75rem;
+      align-items: start;
+    }
+  }
+
+  .cfc-contact__info-heading {
+    margin: 0 0 0.75rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfc-contact__info-text {
+    color: #4b5563;
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+    max-width: 40ch;
+  }
+
+  .cfc-contact__info-text p {
+    margin: 0;
+  }
+
+  .cfc-contact__cards {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cfc-contact__card {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+
+  .cfc-contact__card:hover {
+    border-color: #c5d0c9;
+    transform: translateY(-1px);
+  }
+
+  .cfc-contact__card--static {
+    cursor: default;
+  }
+
+  .cfc-contact__card--static:hover {
+    transform: none;
+  }
+
+  .cfc-contact__card-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: #eef2f0;
+    color: #822c1d;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .cfc-contact__card-copy {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .cfc-contact__card-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7280;
+  }
+
+  .cfc-contact__card-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    word-break: break-word;
+  }
+
+  .cfc-contact__promises {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .cfc-contact__promises li {
+    position: relative;
+    padding-left: 1.2rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.4;
+  }
+
+  .cfc-contact__promises li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: #822c1d;
+  }
+
+  .cfc-contact__form-wrap {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 1.75rem 1.5rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .cfc-contact__form-wrap {
+      padding: 2rem;
+    }
+  }
+
+  .cfc-contact__form-heading {
+    margin: 0 0 1.25rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfc-contact__form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .cfc-contact__row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media screen and (min-width: 600px) {
+    .cfc-contact__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .cfc-contact__field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .cfc-contact__field label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .cfc-contact__field label span {
+    font-weight: 500;
+    color: #9ca3af;
+  }
+
+  .cfc-contact__field input,
+  .cfc-contact__field textarea {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.8rem 0.95rem;
+    font: inherit;
+    background: #faf9f6;
+    color: #111827;
+    transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cfc-contact__field input:focus,
+  .cfc-contact__field textarea:focus {
+    outline: none;
+    border-color: #822c1d;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(44, 74, 62, 0.12);
+  }
+
+  .cfc-contact__field textarea {
+    min-height: 130px;
+    resize: vertical;
+  }
+
+  .cfc-contact__submit {
+    min-height: 52px;
+    border: none;
+    border-radius: 6px;
+    background: #822c1d;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .cfc-contact__submit:hover {
+    background: #6b2317;
+  }
+
+  .cfc-contact__form-note {
+    margin: 0;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #6b7280;
+  }
+
+  .cfc-contact__success {
+    margin: 0;
+    padding: 0.9rem 1rem;
+    border-radius: 6px;
+    background: #eef2f0;
+    color: #822c1d;
+    font-weight: 600;
+  }
+
+  .cfc-contact__errors {
+    color: #b91c1c;
+    font-size: 0.9rem;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Contact page",
+  "tag": "section",
+  "class": "section-comforsh-contact",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Support"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Kontakt"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Questions about your order, shipping or our products? We are happy to help."
+    },
+    {
+      "type": "text",
+      "id": "info_heading",
+      "label": "Info heading",
+      "default": "How to reach us"
+    },
+    {
+      "type": "richtext",
+      "id": "info_text",
+      "label": "Info text",
+      "default": "<p>Our customer service usually replies within 24 hours on business days.</p>"
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "Email",
+      "default": "comforsh@gmail.com"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "Phone"
+    },
+    {
+      "type": "text",
+      "id": "hours",
+      "label": "Hours",
+      "default": "Mo–Fr, 9:00–17:00"
+    },
+    {
+      "type": "text",
+      "id": "promise_1",
+      "label": "Promise 1",
+      "default": "Fast reply on business days"
+    },
+    {
+      "type": "text",
+      "id": "promise_2",
+      "label": "Promise 2",
+      "default": "Help with orders and shipping"
+    },
+    {
+      "type": "text",
+      "id": "promise_3",
+      "label": "Promise 3",
+      "default": "Friendly customer service"
+    },
+    {
+      "type": "text",
+      "id": "form_heading",
+      "label": "Form heading",
+      "default": "Write a message"
+    },
+    {
+      "type": "text",
+      "id": "form_note",
+      "label": "Form note",
+      "default": "We usually reply within 24 hours."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Send message"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Success message",
+      "default": "Thanks! Your message has been sent. We will get back to you soon."
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "Contact page"
+    }
+  ]
+}
+{% endschema %}

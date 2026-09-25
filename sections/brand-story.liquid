@@ -1,0 +1,254 @@
+{% liquid
+  assign eyebrow = section.settings.eyebrow
+  assign heading = section.settings.heading
+  assign text_1 = section.settings.text_1
+  assign text_2 = section.settings.text_2
+  assign button_label = section.settings.button_label
+  assign button_link = section.settings.button_link
+  assign image = section.settings.image
+  assign image_url = section.settings.fallback_image_url
+  assign image_position = section.settings.image_position
+%}
+
+<section
+  class="hc-story hc-story--image-{{ image_position }}"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="page-width hc-story__inner">
+    <div class="hc-story__copy">
+      {% if eyebrow != blank %}
+        <p class="hc-story__eyebrow">{{ eyebrow | escape }}</p>
+      {% endif %}
+      {% if heading != blank %}
+        <h2 class="hc-story__heading">{{ heading | escape }}</h2>
+      {% endif %}
+      {% if text_1 != blank %}
+        <p class="hc-story__text">{{ text_1 | escape }}</p>
+      {% endif %}
+      {% if text_2 != blank %}
+        <p class="hc-story__text">{{ text_2 | escape }}</p>
+      {% endif %}
+      {% if button_label != blank %}
+        <a class="hc-story__btn" href="{{ button_link | default: collections.all.url }}">
+          {{ button_label | escape }}
+        </a>
+      {% endif %}
+    </div>
+
+    <div class="hc-story__media">
+      {% if image != blank %}
+        {{
+          image
+          | image_url: width: 1400
+          | image_tag:
+            loading: 'lazy',
+            widths: '600, 900, 1200, 1400',
+            sizes: '(min-width: 990px) 45vw, 100vw',
+            class: 'hc-story__img',
+            alt: heading
+        }}
+      {% elsif image_url != blank %}
+        <img
+          src="{{ image_url | escape }}"
+          alt="{{ heading | escape }}"
+          class="hc-story__img"
+          loading="lazy"
+          width="900"
+          height="1100"
+        >
+      {% else %}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'hc-story__img' }}
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .hc-story {
+    background: #ffffff;
+    border-top: 1px solid #ececec;
+  }
+
+  .hc-story__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  @media screen and (min-width: 990px) {
+    .hc-story__inner {
+      grid-template-columns: 1fr 1fr;
+      gap: 4.5rem;
+      align-items: center;
+    }
+
+    .hc-story--image-left .hc-story__media {
+      order: -1;
+    }
+  }
+
+  .hc-story__media {
+    overflow: hidden;
+    border-radius: 4px;
+    background: #f3f3f3;
+    aspect-ratio: 4 / 5;
+  }
+
+  .hc-story__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .hc-story__copy {
+    max-width: 32rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .hc-story__copy {
+      padding-right: 1rem;
+    }
+  }
+
+  .hc-story__eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #9ca3af;
+  }
+
+  .hc-story__heading {
+    margin: 0 0 1.15rem;
+    font-size: clamp(1.85rem, 3.5vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    color: #111111;
+  }
+
+  .hc-story__text {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #4b5563;
+    max-width: 36ch;
+  }
+
+  .hc-story__text + .hc-story__text {
+    margin-top: 0.25rem;
+  }
+
+  .hc-story__btn {
+    display: inline-flex;
+    margin-top: 1.1rem;
+    padding: 0.85rem 1.5rem;
+    background: #822c1d;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  .hc-story__btn:hover {
+    background: #6b2317;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Brand Story",
+  "tag": "section",
+  "class": "section-brand-story",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "At Comforsh"
+    },
+    {
+      "type": "textarea",
+      "id": "text_1",
+      "label": "Paragraph 1",
+      "default": "At Comforsh, we bring you ergonomic comfort for home, office and everyday life. Our collection is built for posture, recovery and lasting wellbeing — so every moment feels better."
+    },
+    {
+      "type": "textarea",
+      "id": "text_2",
+      "label": "Paragraph 2"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Lifestyle image"
+    },
+    {
+      "type": "text",
+      "id": "fallback_image_url",
+      "label": "Fallback image URL",
+      "default": "https://cdn.shopify.com/s/files/1/1007/0569/8130/files/comforsh-outdoor-seating-lane.png?v=1786889570"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position (desktop)",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 72
+    }
+  ],
+  "presets": [
+    {
+      "name": "Brand Story"
+    }
+  ]
+}
+{% endschema %}

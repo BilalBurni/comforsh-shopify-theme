@@ -1,0 +1,593 @@
+{%- comment -%}
+  Classic customer addresses manager.
+  Requires Settings → Customer accounts → Classic customer accounts.
+{%- endcomment -%}
+
+<section
+  class="cfp-addr"
+  style="
+    --cfp-addr-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-addr-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-addr__inner">
+    <header class="cfp-addr__header">
+      <a class="cfp-addr__back" href="{{ routes.account_url }}">← {{ section.settings.back_label | escape }}</a>
+      {% if section.settings.eyebrow != blank %}
+        <p class="cfp-addr__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      <h1 class="cfp-addr__title">{{ section.settings.heading | escape }}</h1>
+      {% if section.settings.subtitle != blank %}
+        <p class="cfp-addr__sub">{{ section.settings.subtitle | escape }}</p>
+      {% endif %}
+    </header>
+
+    <div class="cfp-addr__grid">
+      {% paginate customer.addresses by 10 %}
+        {% for address in customer.addresses %}
+          <article class="cfp-addr__card">
+            {% if address == customer.default_address %}
+              <span class="cfp-addr__badge">{{ section.settings.default_label | escape }}</span>
+            {% endif %}
+            <div class="cfp-addr__body">
+              {{ address | format_address }}
+            </div>
+            <div class="cfp-addr__actions">
+              <button
+                type="button"
+                class="cfp-addr__btn"
+                aria-expanded="false"
+                aria-controls="EditAddress-{{ address.id }}"
+                data-cfp-addr-edit="{{ address.id }}"
+              >
+                {{ section.settings.edit_label | escape }}
+              </button>
+              <form
+                method="post"
+                action="{{ routes.account_addresses_url }}/{{ address.id }}"
+                onsubmit="return confirm({{ section.settings.delete_confirm | json }});"
+              >
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit" class="cfp-addr__btn cfp-addr__btn--ghost">
+                  {{ section.settings.delete_label | escape }}
+                </button>
+              </form>
+            </div>
+
+            <div class="cfp-addr__edit" id="EditAddress-{{ address.id }}" hidden>
+              {% form 'customer_address', address %}
+                <h2 class="cfp-addr__form-title">{{ section.settings.edit_heading | escape }}</h2>
+                {% if form.errors %}
+                  <div class="cfp-addr__errors" role="alert">{{ form.errors | default_errors }}</div>
+                {% endif %}
+                <div class="cfp-addr__fields">
+                  <label class="cfp-addr__label" for="AddressFirstName_{{ form.id }}">{{ section.settings.first_name_label | escape }}</label>
+                  <input class="cfp-addr__input" type="text" id="AddressFirstName_{{ form.id }}" name="address[first_name]" value="{{ form.first_name }}" autocomplete="given-name">
+
+                  <label class="cfp-addr__label" for="AddressLastName_{{ form.id }}">{{ section.settings.last_name_label | escape }}</label>
+                  <input class="cfp-addr__input" type="text" id="AddressLastName_{{ form.id }}" name="address[last_name]" value="{{ form.last_name }}" autocomplete="family-name">
+
+                  <label class="cfp-addr__label" for="AddressCompany_{{ form.id }}">{{ section.settings.company_label | escape }}</label>
+                  <input class="cfp-addr__input" type="text" id="AddressCompany_{{ form.id }}" name="address[company]" value="{{ form.company }}" autocomplete="organization">
+
+                  <label class="cfp-addr__label" for="AddressAddress1_{{ form.id }}">{{ section.settings.address1_label | escape }}</label>
+                  <input class="cfp-addr__input" type="text" id="AddressAddress1_{{ form.id }}" name="address[address1]" value="{{ form.address1 }}" autocomplete="address-line1">
+
+                  <label class="cfp-addr__label" for="AddressAddress2_{{ form.id }}">{{ section.settings.address2_label | escape }}</label>
+                  <input class="cfp-addr__input" type="text" id="AddressAddress2_{{ form.id }}" name="address[address2]" value="{{ form.address2 }}" autocomplete="address-line2">
+
+                  <label class="cfp-addr__label" for="AddressCity_{{ form.id }}">{{ section.settings.city_label | escape }}</label>
+                  <input class="cfp-addr__input" type="text" id="AddressCity_{{ form.id }}" name="address[city]" value="{{ form.city }}" autocomplete="address-level2">
+
+                  <label class="cfp-addr__label" for="AddressCountry_{{ form.id }}">{{ section.settings.country_label | escape }}</label>
+                  <select
+                    class="cfp-addr__input"
+                    id="AddressCountry_{{ form.id }}"
+                    name="address[country]"
+                    data-default="{{ form.country }}"
+                    autocomplete="country"
+                  >
+                    {{ all_country_option_tags }}
+                  </select>
+
+                  <label class="cfp-addr__label" for="AddressProvince_{{ form.id }}">{{ section.settings.province_label | escape }}</label>
+                  <select
+                    class="cfp-addr__input"
+                    id="AddressProvince_{{ form.id }}"
+                    name="address[province]"
+                    data-default="{{ form.province }}"
+                    autocomplete="address-level1"
+                  ></select>
+
+                  <label class="cfp-addr__label" for="AddressZip_{{ form.id }}">{{ section.settings.zip_label | escape }}</label>
+                  <input class="cfp-addr__input" type="text" id="AddressZip_{{ form.id }}" name="address[zip]" value="{{ form.zip }}" autocomplete="postal-code">
+
+                  <label class="cfp-addr__label" for="AddressPhone_{{ form.id }}">{{ section.settings.phone_label | escape }}</label>
+                  <input class="cfp-addr__input" type="tel" id="AddressPhone_{{ form.id }}" name="address[phone]" value="{{ form.phone }}" autocomplete="tel">
+                </div>
+
+                <label class="cfp-addr__check">
+                  <input type="checkbox" name="address[default]" value="1" {% if address == customer.default_address %}checked{% endif %}>
+                  {{ section.settings.set_default_label | escape }}
+                </label>
+
+                <div class="cfp-addr__form-actions">
+                  <button type="submit" class="cfp-addr__btn cfp-addr__btn--primary">{{ section.settings.save_label | escape }}</button>
+                  <button type="button" class="cfp-addr__btn cfp-addr__btn--ghost" data-cfp-addr-cancel="{{ address.id }}">
+                    {{ section.settings.cancel_label | escape }}
+                  </button>
+                </div>
+              {% endform %}
+            </div>
+          </article>
+        {% else %}
+          <div class="cfp-addr__empty">
+            <p>{{ section.settings.empty_text | escape }}</p>
+          </div>
+        {% endfor %}
+
+        {% if paginate.pages > 1 %}
+          <div class="cfp-addr__paginate">{{ paginate | default_pagination }}</div>
+        {% endif %}
+      {% endpaginate %}
+
+      <article class="cfp-addr__card cfp-addr__card--new">
+        <h2 class="cfp-addr__form-title">{{ section.settings.add_heading | escape }}</h2>
+        {% form 'customer_address', customer.new_address %}
+          {% if form.errors %}
+            <div class="cfp-addr__errors" role="alert">{{ form.errors | default_errors }}</div>
+          {% endif %}
+          <div class="cfp-addr__fields">
+            <label class="cfp-addr__label" for="AddressFirstNameNew">{{ section.settings.first_name_label | escape }}</label>
+            <input class="cfp-addr__input" type="text" id="AddressFirstNameNew" name="address[first_name]" value="{{ form.first_name }}" autocomplete="given-name">
+
+            <label class="cfp-addr__label" for="AddressLastNameNew">{{ section.settings.last_name_label | escape }}</label>
+            <input class="cfp-addr__input" type="text" id="AddressLastNameNew" name="address[last_name]" value="{{ form.last_name }}" autocomplete="family-name">
+
+            <label class="cfp-addr__label" for="AddressCompanyNew">{{ section.settings.company_label | escape }}</label>
+            <input class="cfp-addr__input" type="text" id="AddressCompanyNew" name="address[company]" value="{{ form.company }}" autocomplete="organization">
+
+            <label class="cfp-addr__label" for="AddressAddress1New">{{ section.settings.address1_label | escape }}</label>
+            <input class="cfp-addr__input" type="text" id="AddressAddress1New" name="address[address1]" value="{{ form.address1 }}" autocomplete="address-line1">
+
+            <label class="cfp-addr__label" for="AddressAddress2New">{{ section.settings.address2_label | escape }}</label>
+            <input class="cfp-addr__input" type="text" id="AddressAddress2New" name="address[address2]" value="{{ form.address2 }}" autocomplete="address-line2">
+
+            <label class="cfp-addr__label" for="AddressCityNew">{{ section.settings.city_label | escape }}</label>
+            <input class="cfp-addr__input" type="text" id="AddressCityNew" name="address[city]" value="{{ form.city }}" autocomplete="address-level2">
+
+            <label class="cfp-addr__label" for="AddressCountryNew">{{ section.settings.country_label | escape }}</label>
+            <select class="cfp-addr__input" id="AddressCountryNew" name="address[country]" data-default="{{ form.country }}" autocomplete="country">
+              {{ all_country_option_tags }}
+            </select>
+
+            <label class="cfp-addr__label" for="AddressProvinceNew">{{ section.settings.province_label | escape }}</label>
+            <select class="cfp-addr__input" id="AddressProvinceNew" name="address[province]" data-default="{{ form.province }}" autocomplete="address-level1"></select>
+
+            <label class="cfp-addr__label" for="AddressZipNew">{{ section.settings.zip_label | escape }}</label>
+            <input class="cfp-addr__input" type="text" id="AddressZipNew" name="address[zip]" value="{{ form.zip }}" autocomplete="postal-code">
+
+            <label class="cfp-addr__label" for="AddressPhoneNew">{{ section.settings.phone_label | escape }}</label>
+            <input class="cfp-addr__input" type="tel" id="AddressPhoneNew" name="address[phone]" value="{{ form.phone }}" autocomplete="tel">
+          </div>
+
+          <label class="cfp-addr__check">
+            <input type="checkbox" name="address[default]" value="1">
+            {{ section.settings.set_default_label | escape }}
+          </label>
+
+          <div class="cfp-addr__form-actions">
+            <button type="submit" class="cfp-addr__btn cfp-addr__btn--primary">{{ section.settings.add_label | escape }}</button>
+          </div>
+        {% endform %}
+      </article>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const root = document.currentScript.previousElementSibling?.closest?.('.cfp-addr') || document.querySelector('.cfp-addr');
+    if (!root) return;
+
+    root.querySelectorAll('[data-cfp-addr-edit]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-cfp-addr-edit');
+        const panel = document.getElementById('EditAddress-' + id);
+        if (!panel) return;
+        const open = panel.hasAttribute('hidden');
+        panel.toggleAttribute('hidden', !open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+
+    root.querySelectorAll('[data-cfp-addr-cancel]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-cfp-addr-cancel');
+        const panel = document.getElementById('EditAddress-' + id);
+        if (!panel) return;
+        panel.setAttribute('hidden', '');
+        const editBtn = root.querySelector('[data-cfp-addr-edit="' + id + '"]');
+        if (editBtn) editBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .cfp-addr {
+    --cfp-bg: var(--color-comforsh-bg, #faf9f6);
+    --cfp-text: var(--color-comforsh-text, #1f2937);
+    --cfp-sage: var(--color-comforsh-accent, #822c1d);
+    --cfp-sage-hover: var(--color-comforsh-accent-hover, #6b2317);
+    --cfp-radius: var(--comforsh-radius, 12px);
+    background: var(--cfp-bg);
+    color: var(--cfp-text);
+    padding: var(--cfp-addr-pad-top, 64px) 0 var(--cfp-addr-pad-bottom, 80px);
+  }
+
+  .cfp-addr__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-addr__back {
+    display: inline-flex;
+    margin-bottom: 0.85rem;
+    color: var(--cfp-sage);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  .cfp-addr__eyebrow {
+    margin: 0 0 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cfp-sage);
+  }
+
+  .cfp-addr__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.75rem, 3vw, 2.35rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfp-addr__sub {
+    margin: 0 0 1.75rem;
+    color: #6b7280;
+    max-width: 40rem;
+    line-height: 1.55;
+  }
+
+  .cfp-addr__grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-addr__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .cfp-addr__card {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: var(--cfp-radius);
+    padding: 1.5rem;
+    position: relative;
+  }
+
+  .cfp-addr__badge {
+    display: inline-flex;
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 999px;
+    background: #ecfdf5;
+    color: #065f46;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .cfp-addr__body {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: #374151;
+  }
+
+  .cfp-addr__actions,
+  .cfp-addr__form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1rem;
+  }
+
+  .cfp-addr__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1.1rem;
+    border: 1px solid #d1d5db;
+    border-radius: var(--cfp-radius);
+    background: #fff;
+    color: #111827;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .cfp-addr__btn--primary {
+    background: var(--cfp-sage);
+    border-color: var(--cfp-sage);
+    color: #fff;
+  }
+
+  .cfp-addr__btn--primary:hover {
+    background: var(--cfp-sage-hover);
+  }
+
+  .cfp-addr__btn--ghost {
+    background: transparent;
+  }
+
+  .cfp-addr__edit {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #ececec;
+  }
+
+  .cfp-addr__form-title {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  .cfp-addr__fields {
+    display: grid;
+    gap: 0.35rem 0.85rem;
+  }
+
+  .cfp-addr__label {
+    margin-top: 0.55rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .cfp-addr__input {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #d1d5db;
+    border-radius: var(--cfp-radius);
+    font: inherit;
+    background: #fff;
+  }
+
+  .cfp-addr__input:focus {
+    outline: 2px solid color-mix(in srgb, var(--cfp-sage) 35%, transparent);
+    border-color: var(--cfp-sage);
+  }
+
+  .cfp-addr__check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+    font-size: 0.88rem;
+  }
+
+  .cfp-addr__empty {
+    grid-column: 1 / -1;
+    padding: 1.25rem;
+    border: 1px dashed #d1d5db;
+    border-radius: var(--cfp-radius);
+    color: #6b7280;
+  }
+
+  .cfp-addr__errors {
+    margin: 0 0 0.85rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--cfp-radius);
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    font-size: 0.88rem;
+  }
+
+  .cfp-addr__paginate {
+    grid-column: 1 / -1;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Addresses",
+  "tag": "section",
+  "class": "section-main-addresses",
+  "enabled_on": {
+    "templates": ["customers/addresses"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "back_label",
+      "label": "Back label",
+      "default": "Back to account"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Kundenkonto"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Adressen"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Manage your delivery addresses for a faster checkout."
+    },
+    {
+      "type": "text",
+      "id": "default_label",
+      "label": "Default badge",
+      "default": "Standard"
+    },
+    {
+      "type": "text",
+      "id": "edit_label",
+      "label": "Edit button",
+      "default": "Bearbeiten"
+    },
+    {
+      "type": "text",
+      "id": "delete_label",
+      "label": "Delete button",
+      "default": "Delete"
+    },
+    {
+      "type": "text",
+      "id": "delete_confirm",
+      "label": "Delete confirm message",
+      "default": "Delete this address?"
+    },
+    {
+      "type": "text",
+      "id": "edit_heading",
+      "label": "Edit form heading",
+      "default": "Adresse bearbeiten"
+    },
+    {
+      "type": "text",
+      "id": "add_heading",
+      "label": "Add form heading",
+      "default": "Add a new address"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty state",
+      "default": "Noch keine Adresse gespeichert."
+    },
+    {
+      "type": "text",
+      "id": "first_name_label",
+      "label": "First name",
+      "default": "Vorname"
+    },
+    {
+      "type": "text",
+      "id": "last_name_label",
+      "label": "Last name",
+      "default": "Nachname"
+    },
+    {
+      "type": "text",
+      "id": "company_label",
+      "label": "Company",
+      "default": "Firma"
+    },
+    {
+      "type": "text",
+      "id": "address1_label",
+      "label": "Address 1",
+      "default": "Adresse"
+    },
+    {
+      "type": "text",
+      "id": "address2_label",
+      "label": "Address 2",
+      "default": "Adresszusatz"
+    },
+    {
+      "type": "text",
+      "id": "city_label",
+      "label": "City",
+      "default": "Stadt"
+    },
+    {
+      "type": "text",
+      "id": "country_label",
+      "label": "Country",
+      "default": "Land"
+    },
+    {
+      "type": "text",
+      "id": "province_label",
+      "label": "Province",
+      "default": "Bundesland"
+    },
+    {
+      "type": "text",
+      "id": "zip_label",
+      "label": "ZIP",
+      "default": "PLZ"
+    },
+    {
+      "type": "text",
+      "id": "phone_label",
+      "label": "Phone",
+      "default": "Telefon"
+    },
+    {
+      "type": "text",
+      "id": "set_default_label",
+      "label": "Set as default",
+      "default": "Als Standardadresse festlegen"
+    },
+    {
+      "type": "text",
+      "id": "save_label",
+      "label": "Save button",
+      "default": "Speichern"
+    },
+    {
+      "type": "text",
+      "id": "cancel_label",
+      "label": "Cancel button",
+      "default": "Abbrechen"
+    },
+    {
+      "type": "text",
+      "id": "add_label",
+      "label": "Add button",
+      "default": "Add address"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

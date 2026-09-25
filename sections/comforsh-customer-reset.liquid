@@ -1,0 +1,298 @@
+{%- comment -%}
+  Classic customer reset password.
+  Requires Settings → Customer accounts → Classic customer accounts.
+{%- endcomment -%}
+
+<section
+  class="cfp-auth"
+  style="
+    --cfp-auth-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-auth-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="cfp-auth__shell">
+    <div class="cfp-auth__panel">
+      <div class="cfp-auth__card">
+        <a href="{{ routes.root_url }}" class="cfp-auth__logo">
+          {% if settings.logo != blank %}
+            {{
+              settings.logo
+              | image_url: width: 280
+              | image_tag:
+                class: 'cfp-auth__logo-img',
+                widths: '140, 200, 280',
+                alt: shop.name
+            }}
+          {% else %}
+            <span class="cfp-auth__logo-text">{{ shop.name }}</span>
+          {% endif %}
+        </a>
+
+        {% if section.settings.eyebrow != blank %}
+          <p class="cfp-auth__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {% endif %}
+        <h1 class="cfp-auth__title">{{ section.settings.heading | escape }}</h1>
+        {% if section.settings.subheading != blank %}
+          <p class="cfp-auth__sub">{{ section.settings.subheading | escape }}</p>
+        {% endif %}
+
+        {% form 'reset_customer_password', class: 'cfp-auth__form' %}
+          {% if form.errors %}
+            <div class="cfp-auth__errors" role="alert">
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
+
+          <label class="cfp-auth__label" for="ResetPassword-{{ section.id }}">
+            {{ section.settings.password_label | escape }}
+          </label>
+          <input
+            class="cfp-auth__input"
+            type="password"
+            name="customer[password]"
+            id="ResetPassword-{{ section.id }}"
+            autocomplete="new-password"
+            required
+          >
+
+          <label class="cfp-auth__label" for="ResetPasswordConfirm-{{ section.id }}">
+            {{ section.settings.password_confirm_label | escape }}
+          </label>
+          <input
+            class="cfp-auth__input"
+            type="password"
+            name="customer[password_confirmation]"
+            id="ResetPasswordConfirm-{{ section.id }}"
+            autocomplete="new-password"
+            required
+          >
+
+          <button type="submit" class="cfp-auth__submit">
+            {{ section.settings.button_label | escape }}
+          </button>
+        {% endform %}
+
+        <p class="cfp-auth__switch">
+          <a href="{{ routes.account_login_url }}">{{ section.settings.back_to_login_label | escape }}</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-auth {
+    --cfp-bg: var(--color-comforsh-bg, #faf9f6);
+    --cfp-text: var(--color-comforsh-text, #1f2937);
+    --cfp-muted: #6b7280;
+    --cfp-sage: var(--color-comforsh-accent, #822c1d);
+    --cfp-sage-hover: var(--color-comforsh-accent-hover, #6b2317);
+    --cfp-radius: var(--comforsh-radius, 12px);
+    background: var(--cfp-bg);
+    color: var(--cfp-text);
+    padding: var(--cfp-auth-pad-top, 64px) 0 var(--cfp-auth-pad-bottom, 80px);
+    min-height: min(70vh, 720px);
+  }
+
+  .cfp-auth__shell {
+    max-width: 520px;
+    margin: 0 auto;
+    padding-inline: clamp(1.25rem, 4vw, 2rem);
+  }
+
+  .cfp-auth__panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cfp-auth__card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: var(--cfp-radius);
+    padding: clamp(1.75rem, 3vw, 2.25rem);
+  }
+
+  .cfp-auth__logo {
+    display: inline-flex;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+    color: var(--cfp-text);
+  }
+
+  .cfp-auth__logo-img {
+    max-height: 36px;
+    width: auto;
+  }
+
+  .cfp-auth__logo-text {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .cfp-auth__eyebrow {
+    margin: 0 0 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cfp-sage);
+  }
+
+  .cfp-auth__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .cfp-auth__sub {
+    margin: 0 0 1.35rem;
+    color: var(--cfp-muted);
+    line-height: 1.55;
+  }
+
+  .cfp-auth__form {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .cfp-auth__label {
+    margin-top: 0.55rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .cfp-auth__input {
+    width: 100%;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid #d1d5db;
+    border-radius: var(--cfp-radius);
+    font: inherit;
+  }
+
+  .cfp-auth__input:focus {
+    outline: 2px solid color-mix(in srgb, var(--cfp-sage) 35%, transparent);
+    border-color: var(--cfp-sage);
+  }
+
+  .cfp-auth__submit {
+    margin-top: 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.95rem 1.25rem;
+    border: 0;
+    border-radius: var(--cfp-radius);
+    background: var(--cfp-sage);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .cfp-auth__submit:hover {
+    background: var(--cfp-sage-hover);
+  }
+
+  .cfp-auth__switch {
+    margin: 1.15rem 0 0;
+    text-align: center;
+    font-size: 0.9rem;
+  }
+
+  .cfp-auth__switch a {
+    color: var(--cfp-sage);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .cfp-auth__errors {
+    margin: 0 0 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--cfp-radius);
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    font-size: 0.88rem;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Reset password",
+  "tag": "section",
+  "class": "section-comforsh-customer-reset",
+  "enabled_on": {
+    "templates": ["customers/reset_password"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Sicherheit"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Neues Passwort"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Choose a new password for your Comforsh account."
+    },
+    {
+      "type": "text",
+      "id": "password_label",
+      "label": "Password label",
+      "default": "Neues Passwort"
+    },
+    {
+      "type": "text",
+      "id": "password_confirm_label",
+      "label": "Confirm password label",
+      "default": "Confirm password"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Submit button",
+      "default": "Passwort speichern"
+    },
+    {
+      "type": "text",
+      "id": "back_to_login_label",
+      "label": "Back to login",
+      "default": "Back to sign in"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,38 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-contact",
+      "settings": {
+        "eyebrow": "Support",
+        "title": "Kontakt",
+        "subtitle": "Fragen zu Ihrer Bestellung, zum Versand oder zu unseren Produkten? Wir helfen gerne.",
+        "info_heading": "So erreichen Sie uns",
+        "info_text": "<p>Unser Kundenservice antwortet an Werktagen in der Regel innerhalb von 24 Stunden.</p>",
+        "email": "comforsh@gmail.com",
+        "phone": "+49 40 68961772",
+        "hours": "Mo–Fr, 9:00–17:00",
+        "promise_1": "Schnelle Antwort an Werktagen",
+        "promise_2": "Hilfe zu Bestellung & Versand",
+        "promise_3": "Freundlicher Kundenservice",
+        "form_heading": "Nachricht schreiben",
+        "form_note": "Wir antworten in der Regel innerhalb von 24 Stunden.",
+        "button_label": "Nachricht senden",
+        "success_message": "Danke! Ihre Nachricht wurde gesendet. Wir melden uns in Kürze.",
+        "padding_top": 0,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

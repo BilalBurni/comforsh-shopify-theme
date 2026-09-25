@@ -1,0 +1,554 @@
+{%- comment -%}
+  Premium classic-customer login.
+  Requires Settings → Customer accounts → Classic customer accounts.
+{%- endcomment -%}
+
+<section
+  class="cfp-auth"
+  style="
+    --cfp-auth-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-auth-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="cfp-auth__shell{% if section.settings.show_side_image %} cfp-auth__shell--split{% endif %}">
+    {% if section.settings.show_side_image %}
+      <div class="cfp-auth__media" aria-hidden="true">
+        {% if section.settings.side_image != blank %}
+          {{
+            section.settings.side_image
+            | image_url: width: 1600
+            | image_tag:
+              class: 'cfp-auth__img',
+              widths: '600, 900, 1200, 1600',
+              sizes: '(min-width: 990px) 50vw, 100vw',
+              loading: 'eager',
+              alt: section.settings.heading
+          }}
+        {% else %}
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'cfp-auth__img cfp-auth__img--placeholder' }}
+        {% endif %}
+        <span class="cfp-auth__media-shade"></span>
+      </div>
+    {% endif %}
+
+    <div class="cfp-auth__panel">
+      <div class="cfp-auth__card cfp-auth__card--login" id="login">
+        <a href="{{ routes.root_url }}" class="cfp-auth__logo">
+          {% if settings.logo != blank %}
+            {{
+              settings.logo
+              | image_url: width: 280
+              | image_tag:
+                class: 'cfp-auth__logo-img',
+                widths: '140, 200, 280',
+                alt: shop.name
+            }}
+          {% else %}
+            <span class="cfp-auth__logo-text">{{ shop.name }}</span>
+          {% endif %}
+        </a>
+
+        {% if section.settings.eyebrow != blank %}
+          <p class="cfp-auth__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {% endif %}
+        <h1 class="cfp-auth__title">{{ section.settings.heading | escape }}</h1>
+        {% if section.settings.subheading != blank %}
+          <p class="cfp-auth__sub">{{ section.settings.subheading | escape }}</p>
+        {% endif %}
+
+        {% form 'customer_login', class: 'cfp-auth__form' %}
+          {% if form.errors %}
+            <div class="cfp-auth__errors" role="alert">
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
+
+          <label class="cfp-auth__label" for="CustomerEmail-{{ section.id }}">
+            {{ section.settings.email_label | escape }}
+          </label>
+          <input
+            class="cfp-auth__input"
+            type="email"
+            name="customer[email]"
+            id="CustomerEmail-{{ section.id }}"
+            autocomplete="email"
+            autocorrect="off"
+            autocapitalize="off"
+            required
+            {% if form.email %}value="{{ form.email }}"{% endif %}
+          >
+
+          <div class="cfp-auth__password-row">
+            <label class="cfp-auth__label" for="CustomerPassword-{{ section.id }}">
+              {{ section.settings.password_label | escape }}
+            </label>
+            {% if section.settings.forgot_label != blank %}
+              <a class="cfp-auth__forgot" href="#recover">
+                {{ section.settings.forgot_label | escape }}
+              </a>
+            {% endif %}
+          </div>
+          <input
+            class="cfp-auth__input"
+            type="password"
+            name="customer[password]"
+            id="CustomerPassword-{{ section.id }}"
+            autocomplete="current-password"
+            required
+          >
+
+          <button type="submit" class="cfp-auth__submit">
+            {{ section.settings.button_label | escape }}
+          </button>
+        {% endform %}
+
+        {% if section.settings.register_prompt != blank %}
+          <p class="cfp-auth__switch">
+            {{ section.settings.register_prompt | escape }}
+            <a href="{{ routes.account_register_url }}">{{ section.settings.register_link_label | escape }}</a>
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="cfp-auth__card cfp-auth__card--recover" id="recover">
+        <h2 class="cfp-auth__title cfp-auth__title--sm">{{ section.settings.recover_heading | escape }}</h2>
+        {% if section.settings.recover_text != blank %}
+          <p class="cfp-auth__sub">{{ section.settings.recover_text | escape }}</p>
+        {% endif %}
+
+        {% form 'recover_customer_password', class: 'cfp-auth__form' %}
+          {% assign recover_success = form.posted_successfully? %}
+          {% if recover_success %}
+            <p class="cfp-auth__success" role="status">{{ section.settings.recover_success | escape }}</p>
+          {% endif %}
+          {% if form.errors %}
+            <div class="cfp-auth__errors" role="alert">
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
+
+          <label class="cfp-auth__label" for="RecoverEmail-{{ section.id }}">
+            {{ section.settings.email_label | escape }}
+          </label>
+          <input
+            class="cfp-auth__input"
+            type="email"
+            name="email"
+            id="RecoverEmail-{{ section.id }}"
+            autocomplete="email"
+            autocorrect="off"
+            autocapitalize="off"
+            required
+          >
+
+          <button type="submit" class="cfp-auth__submit">
+            {{ section.settings.recover_button_label | escape }}
+          </button>
+        {% endform %}
+
+        <p class="cfp-auth__switch">
+          <a href="#login">{{ section.settings.back_to_login_label | escape }}</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-auth {
+    --cfp-bg: #faf9f6;
+    --cfp-text: #1f2937;
+    --cfp-muted: #6b7280;
+    --cfp-sage: #822c1d;
+    --cfp-sage-hover: #6b2317;
+    --cfp-radius: 12px;
+    background: var(--cfp-bg);
+    color: var(--cfp-text);
+    padding: var(--cfp-auth-pad-top, 64px) 0 var(--cfp-auth-pad-bottom, 80px);
+    min-height: min(80vh, 900px);
+  }
+
+  .cfp-auth__shell {
+    max-width: 520px;
+    margin: 0 auto;
+    padding-inline: clamp(1.25rem, 4vw, 2rem);
+  }
+
+  .cfp-auth__shell--split {
+    max-width: 1100px;
+    display: grid;
+    gap: 0;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-auth__shell--split {
+      grid-template-columns: 1.05fr 0.95fr;
+      align-items: stretch;
+      min-height: 640px;
+      border-radius: var(--cfp-radius);
+      overflow: hidden;
+      border: 1px solid #e8e8e8;
+      background: #fff;
+    }
+  }
+
+  .cfp-auth__media {
+    display: none;
+    position: relative;
+    min-height: 280px;
+    background: #e8e6e1;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-auth__shell--split .cfp-auth__media {
+      display: block;
+    }
+  }
+
+  .cfp-auth__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cfp-auth__img--placeholder {
+    opacity: 0.35;
+  }
+
+  .cfp-auth__media-shade {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(17, 24, 39, 0.35), transparent 55%);
+  }
+
+  .cfp-auth__panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    background: transparent;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-auth__shell--split .cfp-auth__panel {
+      background: #fff;
+    }
+  }
+
+  .cfp-auth__card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: var(--cfp-radius);
+    padding: clamp(1.75rem, 3vw, 2.25rem);
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-auth__shell--split .cfp-auth__card {
+      border: 0;
+      padding: 0;
+      background: transparent;
+    }
+  }
+
+  .cfp-auth__card--recover {
+    display: none;
+  }
+
+  .cfp-auth:has(#recover:target) .cfp-auth__card--login {
+    display: none;
+  }
+
+  .cfp-auth__card--recover:target {
+    display: block;
+  }
+
+  .cfp-auth__logo {
+    display: inline-flex;
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+    color: var(--cfp-text);
+  }
+
+  .cfp-auth__logo-img {
+    max-height: 36px;
+    width: auto;
+  }
+
+  .cfp-auth__logo-text {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .cfp-auth__eyebrow {
+    margin: 0 0 0.45rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cfp-sage);
+  }
+
+  .cfp-auth__title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfp-auth__title--sm {
+    font-size: 1.35rem;
+  }
+
+  .cfp-auth__sub {
+    margin: 0 0 1.5rem;
+    color: var(--cfp-muted);
+    line-height: 1.55;
+    font-size: 0.95rem;
+  }
+
+  .cfp-auth__form {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .cfp-auth__label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #374151;
+    margin-top: 0.65rem;
+  }
+
+  .cfp-auth__password-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 0.65rem;
+  }
+
+  .cfp-auth__password-row .cfp-auth__label {
+    margin-top: 0;
+  }
+
+  .cfp-auth__forgot {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--cfp-sage);
+    text-decoration: none;
+  }
+
+  .cfp-auth__forgot:hover {
+    text-decoration: underline;
+  }
+
+  .cfp-auth__input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid #d1d5db;
+    border-radius: var(--cfp-radius);
+    background: #fff;
+    color: var(--cfp-text);
+    padding: 0.75rem 0.95rem;
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .cfp-auth__input:focus {
+    outline: none;
+    border-color: var(--cfp-sage);
+    box-shadow: 0 0 0 3px rgba(44, 74, 62, 0.15);
+  }
+
+  .cfp-auth__submit {
+    margin-top: 1.15rem;
+    width: 100%;
+    min-height: 50px;
+    border: 0;
+    border-radius: var(--cfp-radius);
+    background: var(--cfp-sage);
+    color: #fff;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .cfp-auth__submit:hover {
+    background: var(--cfp-sage-hover);
+    transform: translateY(-1px);
+  }
+
+  .cfp-auth__switch {
+    margin: 1.25rem 0 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--cfp-muted);
+  }
+
+  .cfp-auth__switch a {
+    color: var(--cfp-sage);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .cfp-auth__switch a:hover {
+    text-decoration: underline;
+  }
+
+  .cfp-auth__errors,
+  .cfp-auth__success {
+    margin: 0 0 0.75rem;
+    padding: 0.75rem 0.9rem;
+    border-radius: var(--cfp-radius);
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  .cfp-auth__errors {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+  }
+
+  .cfp-auth__success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Login",
+  "tag": "section",
+  "class": "section-comforsh-customer-login",
+  "enabled_on": {
+    "templates": ["customers/login"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_side_image",
+      "label": "Show lifestyle image panel (desktop)",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "side_image",
+      "label": "Side image"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Welcome back"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Sign in"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Sign in to track your orders and check out faster."
+    },
+    {
+      "type": "text",
+      "id": "email_label",
+      "label": "Email label",
+      "default": "E-Mail"
+    },
+    {
+      "type": "text",
+      "id": "password_label",
+      "label": "Password label",
+      "default": "Passwort"
+    },
+    {
+      "type": "text",
+      "id": "forgot_label",
+      "label": "Forgot password label",
+      "default": "Passwort vergessen?"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Submit button",
+      "default": "Sign in"
+    },
+    {
+      "type": "text",
+      "id": "register_prompt",
+      "label": "Register prompt",
+      "default": "No account yet?"
+    },
+    {
+      "type": "text",
+      "id": "register_link_label",
+      "label": "Register link label",
+      "default": "Registrieren"
+    },
+    {
+      "type": "text",
+      "id": "recover_heading",
+      "label": "Recover heading",
+      "default": "Reset password"
+    },
+    {
+      "type": "textarea",
+      "id": "recover_text",
+      "label": "Recover text",
+      "default": "Enter your email address and we will send you a reset link."
+    },
+    {
+      "type": "text",
+      "id": "recover_button_label",
+      "label": "Recover button",
+      "default": "Link senden"
+    },
+    {
+      "type": "text",
+      "id": "recover_success",
+      "label": "Recover success message",
+      "default": "If an account exists for this email, you will receive a message shortly."
+    },
+    {
+      "type": "text",
+      "id": "back_to_login_label",
+      "label": "Back to login label",
+      "default": "Back to sign in"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 64
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ]
+}
+{% endschema %}

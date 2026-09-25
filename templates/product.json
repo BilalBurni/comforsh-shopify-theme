@@ -1,0 +1,219 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-product",
+      "blocks": {
+        "trust_1": {
+          "type": "trust",
+          "settings": {
+            "label": "Kostenloser Versand"
+          }
+        },
+        "trust_2": {
+          "type": "trust",
+          "settings": {
+            "label": "30 Tage Rückgabe"
+          }
+        },
+        "trust_3": {
+          "type": "trust",
+          "settings": {
+            "label": "Rund um die Uhr für Sie da"
+          }
+        }
+      },
+      "block_order": [
+        "trust_1",
+        "trust_2",
+        "trust_3"
+      ],
+      "settings": {
+        "home_label": "Startseite",
+        "eyebrow": "",
+        "shipping_badge": "Kostenlose Lieferung innerhalb von 7 Tagen",
+        "save_badge_prefix": "SPAREN",
+        "tagline": "",
+        "show_pas": false,
+        "show_benefits": false,
+        "show_buybox_description": true,
+        "show_description": true,
+        "description_heading": "Details",
+        "show_materials": true,
+        "materials_heading": "Pflege & Materialien",
+        "materials_content": "<p>Hochwertige Materialien für den täglichen Gebrauch. Bezüge sind abnehmbar und bei 30 °C maschinenwaschbar. Bitte beachten Sie stets das Pflegeetikett.</p>",
+        "show_shipping": true,
+        "shipping_heading": "Versand (EU)",
+        "shipping_content": "<p>Versandkostenfrei ab 50 €. EU-Lieferung in der Regel in <strong>3–7 Werktagen</strong>. 30 Tage Geld-zurück-Garantie — ohne Risiko testen.</p>",
+        "show_reviews_panel": false,
+        "show_review_form": false,
+        "show_fallback_rating": true,
+        "fallback_rating": 4.8,
+        "fallback_rating_count": 128,
+        "atc_label": "In den Warenkorb",
+        "sold_out_label": "Ausverkauft",
+        "show_buy_now": false,
+        "show_trust_row": true,
+        "show_sticky_bar": true
+      }
+    },
+    "reviews_slider": {
+      "type": "comforsh-pdp-reviews-slider",
+      "disabled": true,
+      "blocks": {
+        "rev_1": {
+          "type": "review",
+          "settings": {
+            "stars": 5,
+            "title": "",
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author": ""
+          }
+        },
+        "rev_2": {
+          "type": "review",
+          "settings": {
+            "stars": 5,
+            "title": "",
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author": ""
+          }
+        },
+        "rev_3": {
+          "type": "review",
+          "settings": {
+            "stars": 4,
+            "title": "",
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author": ""
+          }
+        },
+        "rev_4": {
+          "type": "review",
+          "settings": {
+            "stars": 5,
+            "title": "",
+            "quote": "Vor dem Launch durch eine echte Kundenbewertung ersetzen.",
+            "author": ""
+          }
+        }
+      },
+      "block_order": [
+        "rev_1",
+        "rev_2",
+        "rev_3",
+        "rev_4"
+      ],
+      "settings": {
+        "eyebrow": "Das sagen unsere Kunden",
+        "title": "Das sagen unsere Kunden",
+        "autoplay": true,
+        "autoplay_speed": 5,
+        "padding_top": 72,
+        "padding_bottom": 64
+      }
+    },
+    "pdp_faq": {
+      "type": "comforsh-pdp-faq",
+      "blocks": {
+        "faq_1": {
+          "type": "faq",
+          "settings": {
+            "question": "Wie lange dauert die Lieferung?",
+            "answer": "<p>Bestellungen werden EU-weit in <strong>3–7 Werktagen</strong> geliefert. Versandkostenfrei ab 50 €.</p>"
+          }
+        },
+        "faq_2": {
+          "type": "faq",
+          "settings": {
+            "question": "Kann ich umtauschen oder zurückgeben, wenn es nicht passt?",
+            "answer": "<p>Ja. Sie haben eine <strong>30 Tage Geld-zurück-Garantie</strong> — testen Sie ganz ohne Risiko.</p>"
+          }
+        },
+        "faq_3": {
+          "type": "faq",
+          "settings": {
+            "question": "Wie kann ich meine Bestellung verfolgen?",
+            "answer": "<p>Sie erhalten per E-Mail einen Link zur Sendungsverfolgung, sobald Ihre Bestellung versandt wurde.</p>"
+          }
+        },
+        "faq_4": {
+          "type": "faq",
+          "settings": {
+            "question": "Sind die Bezüge waschbar?",
+            "answer": "<p>Bei den meisten Comforsh-Produkten lässt sich der Bezug abnehmen und bei 30 °C waschen. Achten Sie auf das Pflegeetikett am Artikel.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "faq_1",
+        "faq_2",
+        "faq_3",
+        "faq_4"
+      ],
+      "settings": {
+        "title": "Häufige Fragen",
+        "open_first": false,
+        "padding_top": 72,
+        "padding_bottom": 56
+      }
+    },
+    "feature_comfort": {
+      "type": "comforsh-pdp-feature",
+      "settings": {
+        "eyebrow": "Jeden Tag spürbar",
+        "heading": "Ergonomischer Komfort, der bleibt",
+        "text": "Entwickelt für Haltung, Erholung und Wohlbefinden — damit Sitzen, Schlafen und Bewegen leichter fallen.",
+        "button_label": "JETZT SHOPPEN",
+        "button_link": "shopify://collections/all",
+        "image": "shopify://shop_images/comforsh-seat-cushion-uses.png",
+        "fallback_image_url": "",
+        "image_position": "left",
+        "padding_top": 56,
+        "padding_bottom": 40
+      }
+    },
+    "feature_style": {
+      "type": "comforsh-pdp-feature",
+      "settings": {
+        "eyebrow": "Wo Komfort auf Design trifft",
+        "heading": "Gemacht für den Alltag",
+        "text": "Klares Design, durchdachte Materialien und spürbare Unterstützung — zu Hause, im Büro und unterwegs.",
+        "button_label": "JETZT SHOPPEN",
+        "button_link": "shopify://collections/all",
+        "image": "shopify://shop_images/comforsh-outdoor-seating-lane.png",
+        "fallback_image_url": "",
+        "image_position": "right",
+        "padding_top": 40,
+        "padding_bottom": 72
+      }
+    },
+    "related_products": {
+      "type": "comforsh-related-products",
+      "settings": {
+        "heading": "Das könnte Ihnen auch gefallen",
+        "subtitle": "Weitere Favoriten aus unserem Sortiment",
+        "button_label": "IN DEN WARENKORB",
+        "products_to_show": 8,
+        "padding_top": 64,
+        "padding_bottom": 96
+      }
+    }
+  },
+  "order": [
+    "main",
+    "reviews_slider",
+    "pdp_faq",
+    "feature_comfort",
+    "feature_style",
+    "related_products"
+  ]
+}

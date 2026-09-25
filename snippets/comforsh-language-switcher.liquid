@@ -1,0 +1,193 @@
+{%- doc -%}
+  Comforsh language switcher with inline SVG flags (Windows-safe, no CDN).
+
+  @param {string} [class] - Extra classes on the wrapper
+  @param {string} [id_prefix] - Unique prefix for form ids
+{%- enddoc -%}
+
+{%- liquid
+  assign id_prefix = id_prefix | default: 'Lang'
+  assign extra_class = class | default: ''
+-%}
+
+<nav
+  class="cfp-lang {{ extra_class | strip }}"
+  aria-label="{{ 'content.language' | t }}"
+>
+  <ul class="cfp-lang__list" role="list">
+    {%- if localization.available_languages.size > 1 -%}
+      {%- for language in localization.available_languages -%}
+        {%- liquid
+          assign code = language.iso_code | downcase
+          assign is_active = false
+          if language.iso_code == localization.language.iso_code
+            assign is_active = true
+          endif
+        -%}
+        <li class="cfp-lang__item">
+          {%- assign form_id = id_prefix | append: '-' | append: language.iso_code -%}
+          {%- form 'localization', id: form_id -%}
+            <input type="hidden" name="language_code" value="{{ language.iso_code }}">
+            <button
+              type="submit"
+              class="cfp-lang__btn{% if is_active %} is-active{% endif %}"
+              lang="{{ language.iso_code }}"
+              aria-current="{% if is_active %}true{% else %}false{% endif %}"
+              aria-label="{{ language.endonym_name | escape }}"
+              title="{{ language.endonym_name | escape }}"
+            >
+              <span class="cfp-lang__flag" aria-hidden="true">
+                {% case code %}
+                  {% when 'de' %}
+                    <svg viewBox="0 0 5 3" width="18" height="12" focusable="false"><rect width="5" height="1" y="0" fill="#000"/><rect width="5" height="1" y="1" fill="#D00"/><rect width="5" height="1" y="2" fill="#FFCE00"/></svg>
+                  {% when 'en', 'en-gb' %}
+                    <svg viewBox="0 0 60 30" width="18" height="12" focusable="false"><clipPath id="s{{ form_id }}"><path d="M0,0 v30 h60 v-30 z"/></clipPath><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6" clip-path="url(#s{{ form_id }})"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2" clip-path="url(#s{{ form_id }})"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></svg>
+                  {% when 'en-us' %}
+                    <svg viewBox="0 0 19 10" width="18" height="12" focusable="false"><rect width="19" height="10" fill="#B22234"/><path d="M0,1.5 h19 M0,3.5 h19 M0,5.5 h19 M0,7.5 h19" stroke="#fff" stroke-width="1"/><rect width="7.6" height="5.4" fill="#3C3B6E"/></svg>
+                  {% when 'es' %}
+                    <svg viewBox="0 0 3 2" width="18" height="12" focusable="false"><rect width="3" height="2" fill="#C60B1E"/><rect y="0.5" width="3" height="1" fill="#FFC400"/></svg>
+                  {% when 'fr' %}
+                    <svg viewBox="0 0 3 2" width="18" height="12" focusable="false"><rect width="1" height="2" fill="#002395"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#ED2939"/></svg>
+                  {% when 'it' %}
+                    <svg viewBox="0 0 3 2" width="18" height="12" focusable="false"><rect width="1" height="2" fill="#009246"/><rect x="1" width="1" height="2" fill="#fff"/><rect x="2" width="1" height="2" fill="#CE2B37"/></svg>
+                  {% when 'nl' %}
+                    <svg viewBox="0 0 3 2" width="18" height="12" focusable="false"><rect width="3" height="0.67" fill="#AE1C28"/><rect y="0.67" width="3" height="0.67" fill="#fff"/><rect y="1.33" width="3" height="0.67" fill="#21468B"/></svg>
+                  {% else %}
+                    <svg viewBox="0 0 18 12" width="18" height="12" focusable="false"><rect width="18" height="12" rx="1" fill="#E5E7EB"/><circle cx="9" cy="6" r="3.2" fill="none" stroke="#6B7280" stroke-width="1.2"/><path d="M9 2.8v6.4M5.8 6h6.4" stroke="#6B7280" stroke-width="1"/></svg>
+                {% endcase %}
+              </span>
+              <span class="cfp-lang__code">{{ language.iso_code | upcase }}</span>
+            </button>
+          {%- endform -%}
+        </li>
+      {%- endfor -%}
+    {%- else -%}
+      {%- assign code = localization.language.iso_code | default: 'en' | downcase -%}
+      <li class="cfp-lang__item">
+        <span class="cfp-lang__btn is-active" aria-current="true">
+          <span class="cfp-lang__flag" aria-hidden="true">
+            {% case code %}
+              {% when 'de' %}
+                <svg viewBox="0 0 5 3" width="18" height="12" focusable="false"><rect width="5" height="1" y="0" fill="#000"/><rect width="5" height="1" y="1" fill="#D00"/><rect width="5" height="1" y="2" fill="#FFCE00"/></svg>
+              {% when 'en', 'en-gb' %}
+                <svg viewBox="0 0 60 30" width="18" height="12" focusable="false"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="2"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></svg>
+              {% else %}
+                <svg viewBox="0 0 18 12" width="18" height="12" focusable="false"><rect width="18" height="12" rx="1" fill="#E5E7EB"/><circle cx="9" cy="6" r="3.2" fill="none" stroke="#6B7280" stroke-width="1.2"/></svg>
+            {% endcase %}
+          </span>
+          <span class="cfp-lang__code">{{ localization.language.iso_code | default: 'EN' | upcase }}</span>
+        </span>
+      </li>
+    {%- endif -%}
+  </ul>
+</nav>
+
+{% javascript %}
+  // Header hydration re-renders forms via ?section_id=..., which leaks into return_to.
+  // Rebuild it from the real page URL so a language/country switch never lands on a section fragment.
+  document.addEventListener(
+    'submit',
+    (event) => {
+      const form = event.target;
+      if (!(form instanceof HTMLFormElement) || !form.classList.contains('shopify-localization-form')) return;
+      const input = form.querySelector('input[name="return_to"]');
+      if (!input) return;
+      const root = (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) || '/';
+      let path = window.location.pathname;
+      if (root !== '/' && path.startsWith(root.replace(/\/$/, ''))) {
+        path = '/' + path.slice(root.replace(/\/$/, '').length).replace(/^\//, '');
+      }
+      const params = new URLSearchParams(window.location.search);
+      params.delete('section_id');
+      const query = params.toString();
+      input.value = path + (query ? '?' + query : '');
+    },
+    true
+  );
+{% endjavascript %}
+
+{% stylesheet %}
+  .cfp-lang {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .cfp-lang__list {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin: 0;
+    padding: 0.18rem;
+    list-style: none;
+    border: 1px solid #e5e7eb;
+    border-radius: 999px;
+    background: #fff;
+  }
+
+  .cfp-lang__item {
+    margin: 0;
+    padding: 0;
+  }
+
+  .cfp-lang__item .localization-form,
+  .cfp-lang__item form {
+    margin: 0;
+    display: inline;
+  }
+
+  .cfp-lang__btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: #6b7280;
+    font: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    line-height: 1;
+    padding: 0.35rem 0.55rem;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .cfp-lang__flag {
+    width: 18px;
+    height: 12px;
+    display: inline-flex;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+  }
+
+  .cfp-lang__flag svg {
+    width: 18px;
+    height: 12px;
+    display: block;
+  }
+
+  .cfp-lang__code {
+    line-height: 1;
+  }
+
+  .cfp-lang__btn:hover {
+    color: #111827;
+  }
+
+  .cfp-lang__btn.is-active {
+    background: #822c1d;
+    color: #fff;
+  }
+
+  .cfp-lang--header .cfp-lang__list {
+    border-color: #e8e8e8;
+  }
+
+  .cfp-lang--footer .cfp-lang__list {
+    background: transparent;
+  }
+{% endstylesheet %}

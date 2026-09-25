@@ -1,0 +1,460 @@
+{%- comment -%}
+  Comfort products grid for homepage.
+{%- endcomment -%}
+
+{% liquid
+  comment
+    Each instance of this section points at its own locale group via `t_key`
+    (e.g. comforsh.series.home), so the four homepage series headings translate.
+    Section settings stay as the fallback. `t` output is already escaped, so the
+    fallbacks are escaped at assign time and never escaped again on output.
+  endcomment
+  assign t_key = section.settings.t_key | strip
+  assign title = section.settings.title | escape
+  assign subtitle = section.settings.subtitle | escape
+
+  if t_key != blank
+    assign title_key = t_key | append: '.title'
+    assign subtitle_key = t_key | append: '.subtitle'
+    assign translated_title = title_key | t
+    assign translated_subtitle = subtitle_key | t
+
+    unless translated_title == title_key or translated_title contains 'Translation missing'
+      assign title = translated_title
+    endunless
+    unless translated_subtitle == subtitle_key or translated_subtitle contains 'Translation missing'
+      assign subtitle = translated_subtitle
+    endunless
+  endif
+
+  assign collection = section.settings.collection
+  assign limit = section.settings.products_to_show | default: 4
+
+  if collection != blank
+    assign products = collection.products
+    assign view_all_href = collection.url
+  else
+    assign products = collections.all.products
+    assign view_all_href = routes.all_products_collection_url
+  endif
+
+  if section.settings.view_all_link != blank
+    assign view_all_href = section.settings.view_all_link
+  endif
+%}
+
+<section
+  class="cfp-fcol"
+  style="
+    --cfp-fcol-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-fcol-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-fcol__inner">
+    {% if title != blank or subtitle != blank %}
+      <header class="cfp-fcol__header" data-cf-reveal="up">
+        {% if title != blank %}
+          <h2 class="cfp-fcol__title">{{ title }}</h2>
+        {% endif %}
+        {% if subtitle != blank %}
+          <p class="cfp-fcol__sub">{{ subtitle }}</p>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    <div class="cfp-fcol__grid">
+      {% if products.size == 0 %}
+        <p class="cfp-fcol__empty">{{ section.settings.empty_text | escape }}</p>
+      {% else %}
+        {% for product in products limit: limit %}
+          {% liquid
+            assign variant = product.selected_or_first_available_variant
+            assign on_sale = false
+            assign save_pct = 0
+            if variant.compare_at_price > variant.price
+              assign on_sale = true
+              assign save_amount = variant.compare_at_price | minus: variant.price
+              assign save_pct = save_amount | times: 100.0 | divided_by: variant.compare_at_price | round
+            endif
+          %}
+          <article class="cfp-fcol__card cf-card-hover" data-cf-reveal="up">
+            <a class="cfp-fcol__media cf-media-zoom" href="{{ product.url }}">
+              {% if product.featured_media != blank %}
+                {{
+                  product.featured_media
+                  | image_url: width: 900
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '320, 480, 640, 900',
+                    sizes: '(min-width: 990px) 22vw, (min-width: 750px) 45vw, 90vw',
+                    class: 'cfp-fcol__img',
+                    alt: product.title
+                }}
+              {% else %}
+                {{ 'product-1' | placeholder_svg_tag: 'cfp-fcol__img cfp-fcol__img--placeholder' }}
+              {% endif %}
+
+              {% if variant.available == false %}
+                <span class="cfp-fcol__badge">{{ section.settings.sold_out_badge | escape }}</span>
+              {% elsif on_sale and section.settings.show_save_badge %}
+                <span class="cfp-fcol__badge">
+                  {{ section.settings.save_badge_prefix | escape }} {{ save_pct }}%
+                </span>
+              {% endif %}
+            </a>
+
+            <div class="cfp-fcol__info">
+              <h3 class="cfp-fcol__name">
+                <a href="{{ product.url }}">{{ product.title | escape }}</a>
+              </h3>
+              <div class="cfp-fcol__price">
+                {% if on_sale %}
+                  <s class="cfp-fcol__compare">{{ variant.compare_at_price | money }}</s>
+                {% endif %}
+                <span class="cfp-fcol__current">{{ variant.price | money }}</span>
+              </div>
+
+              {% if product.has_only_default_variant == false and product.variants.size > 1 %}
+                <a class="cfp-fcol__btn" href="{{ product.url }}">
+                  {{ section.settings.choose_label | escape }}
+                </a>
+              {% elsif variant.available %}
+                {% form 'product', product %}
+                  <input type="hidden" name="id" value="{{ variant.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit" class="cfp-fcol__btn">
+                    {{ section.settings.atc_label | escape }}
+                  </button>
+                {% endform %}
+              {% else %}
+                <button type="button" class="cfp-fcol__btn cfp-fcol__btn--disabled" disabled>
+                  {{ section.settings.sold_out_badge | escape }}
+                </button>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    {% if section.settings.show_view_all and section.settings.view_all_label != blank %}
+      <div class="cfp-fcol__cta">
+        <a class="cfp-fcol__view-all" href="{{ view_all_href }}">
+          {{ section.settings.view_all_label | escape }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-fcol {
+    background: #ffffff;
+    color: #111111;
+    padding: var(--cfp-fcol-pad-top, 72px) 0 var(--cfp-fcol-pad-bottom, 80px);
+  }
+
+  .cfp-fcol__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-fcol__header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .cfp-fcol__title {
+    margin: 0 0 0.55rem;
+    font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .cfp-fcol__sub {
+    margin: 0 auto;
+    max-width: 38rem;
+    color: #6b7280;
+    font-size: 0.98rem;
+    line-height: 1.5;
+  }
+
+  .cfp-fcol__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.75rem 1rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-fcol__grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 2rem 1.25rem;
+    }
+  }
+
+  .cfp-fcol__card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.85rem;
+  }
+
+  .cfp-fcol__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1;
+    background: #f3f4f6;
+    border-radius: 6px;
+    overflow: hidden;
+    text-decoration: none;
+  }
+
+  .cfp-fcol__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 8%;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+
+  .cfp-fcol__img--placeholder {
+    opacity: 0.35;
+    padding: 20%;
+  }
+
+  .cfp-fcol__media:hover .cfp-fcol__img {
+    transform: scale(1.04);
+  }
+
+  .cfp-fcol__badge {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.65rem;
+    z-index: 2;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    background: #822c1d;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .cfp-fcol__info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1 1 auto;
+    gap: 0.45rem;
+    text-align: center;
+    width: 100%;
+  }
+
+  .cfp-fcol__name {
+    margin: 0;
+    width: 100%;
+    min-height: calc(1.3em * 2);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .cfp-fcol__name a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .cfp-fcol__price {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.9rem;
+  }
+
+  .cfp-fcol__compare {
+    color: #9ca3af;
+  }
+
+  .cfp-fcol__current {
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .cfp-fcol__info > :last-child {
+    margin-top: auto;
+    width: 100%;
+  }
+
+  .cfp-fcol__info form {
+    margin: 0;
+    width: 100%;
+  }
+
+  .cfp-fcol__btn {
+    width: 100%;
+    margin-top: 0.35rem;
+    min-height: 44px;
+    height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cfp-fcol__info > :last-child.cfp-fcol__btn,
+  .cfp-fcol__info form .cfp-fcol__btn {
+    margin-top: 0;
+  }
+
+  .cfp-fcol__btn--disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .cfp-fcol__btn--disabled:hover {
+    transform: none !important;
+  }
+
+  .cfp-fcol__empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #6b7280;
+  }
+
+  .cfp-fcol__cta {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.75rem;
+  }
+
+  .cfp-fcol__view-all {
+    min-width: 168px;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Comfort products",
+  "tag": "section",
+  "class": "section-comfort-products",
+  "settings": [
+    {
+      "type": "text",
+      "id": "t_key",
+      "label": "Translation key group",
+      "info": "Optional. e.g. comforsh.series.home — looks up <key>.title and <key>.subtitle in the locale files so this heading translates. Leave blank to use the text below as-is."
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "COMFORT COLLECTION"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Ergonomic comfort for posture, rest and everyday wellbeing"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "Products to show",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_save_badge",
+      "label": "Show save badge",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "save_badge_prefix",
+      "label": "Save badge prefix",
+      "default": "SAVE"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_badge",
+      "label": "Sold out badge",
+      "default": "SOLD OUT"
+    },
+    {
+      "type": "text",
+      "id": "choose_label",
+      "label": "Choose options label",
+      "default": "Options"
+    },
+    {
+      "type": "text",
+      "id": "atc_label",
+      "label": "Add to cart label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty text",
+      "default": "Products coming soon."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View all button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "View all label",
+      "default": "View all"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "View all link"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comfort products"
+    }
+  ]
+}
+{% endschema %}

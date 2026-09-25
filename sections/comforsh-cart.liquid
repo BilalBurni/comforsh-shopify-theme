@@ -1,0 +1,567 @@
+<section class="cfc" id="ComforshCart-{{ section.id }}">
+  <div class="page-width cfc__inner">
+    <header class="cfc__header">
+      <h1 class="cfc__title">
+        {{ section.settings.title | default: 'Warenkorb' | escape }}
+        {% if cart.item_count > 0 %}
+          <span class="cfc__count">({{ cart.item_count }})</span>
+        {% endif %}
+      </h1>
+      {% if cart.item_count > 0 %}
+        <a class="cfc__continue" href="{{ routes.all_products_collection_url }}">
+          {{ section.settings.continue_label | default: 'Weiter einkaufen' | escape }}
+        </a>
+      {% endif %}
+    </header>
+
+    {% if cart.item_count == 0 %}
+      <div class="cfc__empty">
+        <p class="cfc__empty-text">{{ section.settings.empty_text | default: 'Ihr Warenkorb ist leer.' | escape }}</p>
+        <a class="cfc__empty-btn" href="{{ routes.all_products_collection_url }}">
+          {{ section.settings.empty_button | default: 'Jetzt einkaufen' | escape }}
+        </a>
+      </div>
+    {% else %}
+      <div class="cfc__grid">
+        <div class="cfc__items" data-cfc-items>
+          {% for item in cart.items %}
+            <article class="cfc__item" data-cfc-item data-key="{{ item.key }}">
+              <a class="cfc__item-media" href="{{ item.url }}">
+                {% if item.image %}
+                  {{
+                    item.image
+                    | image_url: width: 240
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: '120, 180, 240',
+                      sizes: '96px',
+                      alt: item.product.title,
+                      class: 'cfc__item-img'
+                  }}
+                {% else %}
+                  {{ 'product-1' | placeholder_svg_tag: 'cfc__item-img' }}
+                {% endif %}
+              </a>
+
+              <div class="cfc__item-info">
+                <h2 class="cfc__item-title">
+                  <a href="{{ item.url }}">{{ item.product.title | escape }}</a>
+                </h2>
+                {% unless item.product.has_only_default_variant %}
+                  <p class="cfc__item-variant">{{ item.variant.title | escape }}</p>
+                {% endunless %}
+                <p class="cfc__item-price" data-cfc-line-price>
+                  {{ item.final_line_price | money }}
+                </p>
+
+                <div class="cfc__item-actions">
+                  <div class="cfc__qty" data-cfc-qty>
+                    <button type="button" class="cfc__qty-btn" data-cfc-qty-minus aria-label="Verringern">−</button>
+                    <input
+                      class="cfc__qty-input"
+                      type="number"
+                      min="0"
+                      value="{{ item.quantity }}"
+                      data-cfc-qty-input
+                      aria-label="Menge"
+                    >
+                    <button type="button" class="cfc__qty-btn" data-cfc-qty-plus aria-label="Erhöhen">+</button>
+                  </div>
+                  <button type="button" class="cfc__remove" data-cfc-remove>
+                    {{ section.settings.remove_label | default: 'Entfernen' | escape }}
+                  </button>
+                </div>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+
+        <aside class="cfc__summary">
+          <h2 class="cfc__summary-title">{{ section.settings.summary_title | default: 'Zusammenfassung' | escape }}</h2>
+
+          <div class="cfc__summary-row">
+            <span>{{ section.settings.subtotal_label | default: 'Zwischensumme' | escape }}</span>
+            <strong data-cfc-subtotal>{{ cart.total_price | money }}</strong>
+          </div>
+
+          {% if section.settings.shipping_note != blank %}
+            <p class="cfc__summary-note">{{ section.settings.shipping_note | escape }}</p>
+          {% endif %}
+
+          <ul class="cfc__trust">
+            {% if section.settings.trust_1 != blank %}
+              <li>{{ section.settings.trust_1 | escape }}</li>
+            {% endif %}
+            {% if section.settings.trust_2 != blank %}
+              <li>{{ section.settings.trust_2 | escape }}</li>
+            {% endif %}
+            {% if section.settings.trust_3 != blank %}
+              <li>{{ section.settings.trust_3 | escape }}</li>
+            {% endif %}
+          </ul>
+
+          <form action="{{ routes.cart_url }}" method="post">
+            <button type="submit" name="checkout" class="cfc__checkout">
+              {{ section.settings.checkout_label | default: 'Zur Kasse' | escape }}
+            </button>
+          </form>
+        </aside>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  (() => {
+    const root = document.getElementById('ComforshCart-{{ section.id }}');
+    if (!root) return;
+
+    const money = (cents) => {
+      try {
+        return (cents / 100).toLocaleString('de-DE', {
+          style: 'currency',
+          currency: {{ cart.currency.iso_code | json }}
+        });
+      } catch (e) {
+        return (cents / 100).toFixed(2);
+      }
+    };
+
+    const updateCart = async (key, quantity) => {
+      const res = await fetch('{{ routes.cart_change_url }}.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ id: key, quantity })
+      });
+      if (!res.ok) throw new Error('Cart update failed');
+      return res.json();
+    };
+
+    const refreshUI = (cart) => {
+      const subtotal = root.querySelector('[data-cfc-subtotal]');
+      if (subtotal) subtotal.textContent = money(cart.total_price);
+
+      if (cart.item_count === 0) {
+        window.location.reload();
+        return;
+      }
+
+      root.querySelectorAll('[data-cfc-item]').forEach((row) => {
+        const key = row.getAttribute('data-key');
+        const line = cart.items.find((i) => i.key === key);
+        if (!line) {
+          row.remove();
+          return;
+        }
+        const input = row.querySelector('[data-cfc-qty-input]');
+        const price = row.querySelector('[data-cfc-line-price]');
+        if (input) input.value = line.quantity;
+        if (price) price.textContent = money(line.final_line_price);
+      });
+
+      const count = root.querySelector('.cfc__count');
+      if (count) count.textContent = '(' + cart.item_count + ')';
+    };
+
+    root.querySelectorAll('[data-cfc-item]').forEach((row) => {
+      const key = row.getAttribute('data-key');
+      const input = row.querySelector('[data-cfc-qty-input]');
+      const minus = row.querySelector('[data-cfc-qty-minus]');
+      const plus = row.querySelector('[data-cfc-qty-plus]');
+      const remove = row.querySelector('[data-cfc-remove]');
+
+      const apply = async (qty) => {
+        row.classList.add('is-loading');
+        try {
+          const cart = await updateCart(key, Math.max(0, qty));
+          refreshUI(cart);
+        } catch (e) {
+          console.error(e);
+        } finally {
+          row.classList.remove('is-loading');
+        }
+      };
+
+      minus?.addEventListener('click', () => apply((parseInt(input.value, 10) || 1) - 1));
+      plus?.addEventListener('click', () => apply((parseInt(input.value, 10) || 0) + 1));
+      remove?.addEventListener('click', () => apply(0));
+      input?.addEventListener('change', () => apply(parseInt(input.value, 10) || 0));
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .cfc {
+    background: #faf9f6;
+    padding: 2rem 0 3rem;
+  }
+
+  .cfc__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfc__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .cfc__title {
+    margin: 0;
+    font-size: clamp(1.6rem, 3vw, 2.1rem);
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.02em;
+  }
+
+  .cfc__count {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.85em;
+  }
+
+  .cfc__continue {
+    color: #822c1d;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .cfc__empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .cfc__empty-text {
+    margin: 0 0 1.25rem;
+    font-size: 1.1rem;
+    color: #4b5563;
+  }
+
+  .cfc__empty-btn,
+  .cfc__checkout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 52px;
+    padding: 0.85rem 1.5rem;
+    border: none;
+    border-radius: 4px;
+    background: #822c1d;
+    color: #fff !important;
+    text-decoration: none !important;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .cfc__empty-btn:hover,
+  .cfc__checkout:hover {
+    background: #6b2317;
+  }
+
+  .cfc__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfc__grid {
+      grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.75fr);
+      gap: 2.5rem;
+      align-items: start;
+    }
+
+    .cfc__summary {
+      position: sticky;
+      top: 6rem;
+    }
+  }
+
+  .cfc__items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .cfc__item {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    transition: opacity 0.2s ease;
+  }
+
+  .cfc__item.is-loading {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .cfc__item-media {
+    display: block;
+    aspect-ratio: 1 / 1;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #f3f4f6;
+  }
+
+  .cfc__item-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  .cfc__item-title {
+    margin: 0 0 0.25rem;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #111827;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .cfc__item-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .cfc__item-variant {
+    margin: 0 0 0.45rem;
+    font-size: 0.88rem;
+    color: #6b7280;
+  }
+
+  .cfc__item-price {
+    margin: 0 0 0.85rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #822c1d;
+  }
+
+  .cfc__item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+  }
+
+  .cfc__qty {
+    display: grid;
+    grid-template-columns: 36px 48px 36px;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .cfc__qty-btn {
+    border: none;
+    background: #f3f4f6;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: #1f2937;
+  }
+
+  .cfc__qty-input {
+    border: none;
+    border-left: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    text-align: center;
+    font-weight: 600;
+    -moz-appearance: textfield;
+  }
+
+  .cfc__qty-input::-webkit-outer-spin-button,
+  .cfc__qty-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .cfc__remove {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .cfc__remove:hover {
+    color: #b91c1c;
+  }
+
+  .cfc__summary {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 8px;
+    padding: 1.35rem 1.25rem;
+  }
+
+  .cfc__summary-title {
+    margin: 0 0 1rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfc__summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    font-size: 1rem;
+    color: #1f2937;
+    margin-bottom: 0.75rem;
+  }
+
+  .cfc__summary-row strong {
+    color: #822c1d;
+    font-size: 1.2rem;
+  }
+
+  .cfc__summary-note {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #6b7280;
+  }
+
+  .cfc__trust {
+    list-style: none;
+    margin: 0 0 1.25rem;
+    padding: 0;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .cfc__trust li {
+    position: relative;
+    padding-left: 1.15rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #4b5563;
+  }
+
+  .cfc__trust li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: #822c1d;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Comforsh Cart",
+  "tag": "section",
+  "class": "section-comforsh-cart",
+  "enabled_on": {
+    "templates": ["cart"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Cart"
+    },
+    {
+      "type": "text",
+      "id": "continue_label",
+      "label": "Continue shopping label",
+      "default": "Weiter einkaufen"
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty cart text",
+      "default": "Your cart is empty."
+    },
+    {
+      "type": "text",
+      "id": "empty_button",
+      "label": "Empty cart button",
+      "default": "Shop now"
+    },
+    {
+      "type": "text",
+      "id": "summary_title",
+      "label": "Summary title",
+      "default": "Zusammenfassung"
+    },
+    {
+      "type": "text",
+      "id": "subtotal_label",
+      "label": "Subtotal label",
+      "default": "Zwischensumme"
+    },
+    {
+      "type": "text",
+      "id": "shipping_note",
+      "label": "Shipping note",
+      "default": "Shipping is calculated at checkout."
+    },
+    {
+      "type": "text",
+      "id": "checkout_label",
+      "label": "Checkout button",
+      "default": "Checkout"
+    },
+    {
+      "type": "text",
+      "id": "remove_label",
+      "label": "Remove label",
+      "default": "Entfernen"
+    },
+    {
+      "type": "text",
+      "id": "trust_1",
+      "label": "Trust line 1",
+      "default": "Secure payment"
+    },
+    {
+      "type": "text",
+      "id": "trust_2",
+      "label": "Trust line 2",
+      "default": "Fast shipping"
+    },
+    {
+      "type": "text",
+      "id": "trust_3",
+      "label": "Trust line 3",
+      "default": "30-day returns"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comforsh Cart"
+    }
+  ]
+}
+{% endschema %}

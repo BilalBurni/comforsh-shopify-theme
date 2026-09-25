@@ -1,0 +1,372 @@
+{%- comment -%}
+  Hub page for New Customer Accounts (Classic not available on this store).
+  Login + account creation both use Shopify-hosted auth.
+{%- endcomment -%}
+{%- assign cfp_login_url = routes.storefront_login_url -%}
+
+<section
+  class="cfp-account"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="cfp-account__hero">
+    <div class="page-width cfp-account__hero-inner">
+      {% if section.settings.eyebrow != blank %}
+        <p class="cfp-account__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      <h1 class="cfp-account__title">{{ section.settings.title | default: 'Konto' | escape }}</h1>
+      {% if section.settings.subtitle != blank %}
+        <p class="cfp-account__sub">{{ section.settings.subtitle | escape }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="page-width cfp-account__inner">
+    {% if customer %}
+      <div class="cfp-account__welcome">
+        <h2 class="cfp-account__welcome-title">
+          {% if customer.first_name != blank %}
+            Hallo {{ customer.first_name | escape }}
+          {% else %}
+            Willkommen zurück
+          {% endif %}
+        </h2>
+        {% if customer.email != blank %}
+          <p class="cfp-account__welcome-email">{{ customer.email | escape }}</p>
+        {% endif %}
+        <div class="cfp-account__actions">
+          <a class="cfp-account__btn cfp-account__btn--primary" href="{{ routes.account_url }}">
+            {{ section.settings.orders_button | default: 'Mein Konto öffnen' | escape }}
+          </a>
+          <a class="cfp-account__btn cfp-account__btn--ghost" href="{{ routes.storefront_logout_url | default: routes.account_logout_url }}">
+            {{ section.settings.logout_button | default: 'Abmelden' | escape }}
+          </a>
+        </div>
+      </div>
+    {% else %}
+      <div class="cfp-account__grid">
+        <div class="cfp-account__panel">
+          <h2 class="cfp-account__panel-title">{{ section.settings.login_heading | default: 'Anmelden' | escape }}</h2>
+          <p class="cfp-account__panel-text">{{ section.settings.login_text | default: 'Melden Sie sich mit E-Mail an. Neu hier? Dieselbe Anmeldung erstellt automatisch Ihr Konto.' | escape }}</p>
+          <div class="cfp-account__actions">
+            <a class="cfp-account__btn cfp-account__btn--primary" href="{{ cfp_login_url }}">
+              {{ section.settings.login_button | default: 'Anmelden / Konto erstellen' | escape }}
+            </a>
+          </div>
+          <p class="cfp-account__hint">{{ section.settings.register_hint | default: 'Sie erhalten einen Einmal-Code per E-Mail — kein Passwort nötig.' | escape }}</p>
+        </div>
+
+        <div class="cfp-account__benefits">
+          <h2 class="cfp-account__panel-title">{{ section.settings.benefits_heading | default: 'Ihre Vorteile' | escape }}</h2>
+          <ul class="cfp-account__list">
+            {% if section.settings.benefit_1 != blank %}<li>{{ section.settings.benefit_1 | escape }}</li>{% endif %}
+            {% if section.settings.benefit_2 != blank %}<li>{{ section.settings.benefit_2 | escape }}</li>{% endif %}
+            {% if section.settings.benefit_3 != blank %}<li>{{ section.settings.benefit_3 | escape }}</li>{% endif %}
+            {% if section.settings.benefit_4 != blank %}<li>{{ section.settings.benefit_4 | escape }}</li>{% endif %}
+          </ul>
+          <a class="cfp-account__btn cfp-account__btn--secondary" href="{{ routes.all_products_collection_url }}">
+            {{ section.settings.shop_button | default: 'Jetzt einkaufen' | escape }}
+          </a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-account {
+    background: #faf9f6;
+  }
+
+  .cfp-account__hero {
+    background: linear-gradient(180deg, #eef2f0 0%, #faf9f6 100%);
+    border-bottom: 1px solid #e8e8e8;
+    padding: 3.5rem 0 2.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .cfp-account__hero-inner,
+  .cfp-account__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-account__eyebrow {
+    margin: 0 0 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #822c1d;
+  }
+
+  .cfp-account__title {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfp-account__sub {
+    margin: 0.85rem 0 0;
+    max-width: 40rem;
+    color: #4b5563;
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
+  .cfp-account__grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media screen and (min-width: 900px) {
+    .cfp-account__grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+  }
+
+  .cfp-account__panel,
+  .cfp-account__benefits,
+  .cfp-account__welcome {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 1.75rem 1.5rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .cfp-account__panel,
+    .cfp-account__benefits,
+    .cfp-account__welcome {
+      padding: 2rem;
+    }
+  }
+
+  .cfp-account__panel-title,
+  .cfp-account__welcome-title {
+    margin: 0 0 0.75rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfp-account__panel-text,
+  .cfp-account__welcome-email,
+  .cfp-account__hint {
+    margin: 0 0 1.25rem;
+    color: #4b5563;
+    line-height: 1.6;
+  }
+
+  .cfp-account__hint {
+    margin: 1rem 0 0;
+    font-size: 0.88rem;
+  }
+
+  .cfp-account__list {
+    list-style: none;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    display: grid;
+    gap: 0.7rem;
+  }
+
+  .cfp-account__list li {
+    position: relative;
+    padding-left: 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #374151;
+    line-height: 1.45;
+  }
+
+  .cfp-account__list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: #822c1d;
+  }
+
+  .cfp-account__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .cfp-account__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.7rem 1.25rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cfp-account__btn--primary {
+    background: #822c1d;
+    color: #fff;
+    border: 1px solid #822c1d;
+  }
+
+  .cfp-account__btn--primary:hover {
+    background: #6b2317;
+    border-color: #6b2317;
+  }
+
+  .cfp-account__btn--secondary {
+    background: #fff;
+    color: #822c1d;
+    border: 1px solid #822c1d;
+  }
+
+  .cfp-account__btn--secondary:hover {
+    background: #eef2f0;
+  }
+
+  .cfp-account__btn--ghost {
+    background: transparent;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+  }
+
+  .cfp-account__btn--ghost:hover {
+    color: #111827;
+    border-color: #9ca3af;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Account hub",
+  "tag": "section",
+  "class": "section-comforsh-account",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Kundenkonto"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Account"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Sign in to track orders, save addresses and check out faster."
+    },
+    {
+      "type": "text",
+      "id": "login_heading",
+      "label": "Login heading",
+      "default": "Sign in"
+    },
+    {
+      "type": "textarea",
+      "id": "login_text",
+      "label": "Login text",
+      "default": "Sign in with your email. New here? The same sign-in creates your account automatically."
+    },
+    {
+      "type": "text",
+      "id": "login_button",
+      "label": "Login button",
+      "default": "Sign in / create account"
+    },
+    {
+      "type": "text",
+      "id": "register_hint",
+      "label": "Login hint",
+      "default": "You will get a one-time code by email, no password needed."
+    },
+    {
+      "type": "text",
+      "id": "orders_button",
+      "label": "Logged-in account button",
+      "default": "Open my account"
+    },
+    {
+      "type": "text",
+      "id": "logout_button",
+      "label": "Logout button",
+      "default": "Abmelden"
+    },
+    {
+      "type": "text",
+      "id": "benefits_heading",
+      "label": "Benefits heading",
+      "default": "Your benefits"
+    },
+    {
+      "type": "text",
+      "id": "benefit_1",
+      "label": "Benefit 1",
+      "default": "Bestellstatus jederzeit einsehen"
+    },
+    {
+      "type": "text",
+      "id": "benefit_2",
+      "label": "Benefit 2",
+      "default": "Adressen sicher speichern"
+    },
+    {
+      "type": "text",
+      "id": "benefit_3",
+      "label": "Benefit 3",
+      "default": "Schnellerer Checkout"
+    },
+    {
+      "type": "text",
+      "id": "benefit_4",
+      "label": "Benefit 4",
+      "default": "Personal order history"
+    },
+    {
+      "type": "text",
+      "id": "shop_button",
+      "label": "Shop button",
+      "default": "Shop now"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "Account hub"
+    }
+  ]
+}
+{% endschema %}

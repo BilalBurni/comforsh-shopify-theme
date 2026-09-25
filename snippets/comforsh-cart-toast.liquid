@@ -1,0 +1,202 @@
+<div class="cfc-toast" id="ComforshCartToast" hidden role="status" aria-live="polite">
+  <div class="cfc-toast__inner">
+    <span class="cfc-toast__check" aria-hidden="true">✓</span>
+    <div class="cfc-toast__copy">
+      <strong class="cfc-toast__title">{{ 'comforsh.product.added_to_cart' | t }}</strong>
+      <span class="cfc-toast__msg" data-cfc-toast-msg></span>
+    </div>
+    <a class="cfc-toast__link" href="{{ routes.cart_url }}">{{ 'content.cart_title' | t }}</a>
+    <button type="button" class="cfc-toast__close" data-cfc-toast-close aria-label="{{ 'actions.close' | t }}">×</button>
+  </div>
+</div>
+
+<style>
+  .cfc-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translateX(-50%) translateY(120%);
+    z-index: var(--layer-temporary);
+    width: min(520px, calc(100% - 2rem));
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s ease, opacity 0.28s ease;
+  }
+
+  .cfc-toast.is-visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .cfc-toast__inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-radius: 8px;
+    background: #1f2937;
+    color: #fff;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
+  }
+
+  .cfc-toast__check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #822c1d;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .cfc-toast__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    flex: 1;
+  }
+
+  .cfc-toast__title {
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .cfc-toast__msg {
+    font-size: 0.8rem;
+    color: #d1d5db;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cfc-toast__link {
+    color: #fff !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    flex-shrink: 0;
+  }
+
+  .cfc-toast__close {
+    border: none;
+    background: transparent;
+    color: #9ca3af;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 0.15rem;
+  }
+</style>
+
+<script>
+  (() => {
+    const toast = document.getElementById('ComforshCartToast');
+    if (!toast) return;
+    const msgEl = toast.querySelector('[data-cfc-toast-msg]');
+    const closeBtn = toast.querySelector('[data-cfc-toast-close]');
+    let hideTimer;
+
+    const hide = () => {
+      toast.classList.remove('is-visible');
+      setTimeout(() => {
+        toast.hidden = true;
+      }, 280);
+    };
+
+    const show = (message) => {
+      if (msgEl) msgEl.textContent = message || '';
+      toast.hidden = false;
+      requestAnimationFrame(() => toast.classList.add('is-visible'));
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(hide, 4200);
+    };
+
+    closeBtn?.addEventListener('click', hide);
+
+    const updateBubble = (itemCount) => {
+      const bubbles = document.querySelectorAll('.cart-bubble__text, [data-testid="cart-bubble"]');
+      bubbles.forEach((el) => {
+        if (el.classList?.contains('cart-bubble__text') || el.hasAttribute('data-testid')) {
+          el.textContent = String(itemCount);
+        }
+      });
+      document.querySelectorAll('cart-icon, .cart-bubble').forEach((el) => {
+        if (itemCount > 0) el.removeAttribute('hidden');
+        el.classList?.toggle('cart-bubble--visible', itemCount > 0);
+      });
+      const bubbleText = document.getElementById('cart-bubble-text');
+      if (bubbleText) bubbleText.textContent = String(itemCount);
+    };
+
+    const openDrawer = () => {
+      const drawer = document.querySelector('cart-drawer-component');
+      if (drawer && typeof drawer.open === 'function') {
+        drawer.open();
+        return true;
+      }
+      return false;
+    };
+
+    window.ComforshCart = {
+      async add({ id, quantity = 1, title = '' }) {
+        const res = await fetch((window.Theme?.routes?.cart_add_url) || '/cart/add.js', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({ items: [{ id: Number(id), quantity: Number(quantity) || 1 }] })
+        });
+        const data = await res.json();
+        if (!res.ok || data.status) {
+          throw new Error(data.description || data.message || 'Fehler beim Hinzufügen');
+        }
+
+        let itemCount = 0;
+        try {
+          const cartRes = await fetch((window.Theme?.routes?.cart_url || '/cart') + '.js');
+          const cart = await cartRes.json();
+          itemCount = cart.item_count;
+          updateBubble(itemCount);
+        } catch (e) {
+          itemCount = Number(quantity) || 1;
+          updateBubble(itemCount);
+        }
+
+        show(title || {{ 'comforsh.product.added_to_cart' | t | json }});
+        document.dispatchEvent(
+          new CustomEvent('cart:update', {
+            bubbles: true,
+            detail: {
+              resource: data,
+              sourceId: 'comforsh-cart',
+              data: { source: 'comforsh-cart', itemCount }
+            }
+          })
+        );
+
+        setTimeout(() => openDrawer(), 120);
+        return data;
+      },
+      show,
+      openDrawer
+    };
+
+    document.addEventListener('cart:update', (event) => {
+      const count = event?.detail?.data?.itemCount ?? event?.detail?.resource?.item_count;
+      if (typeof count === 'number') updateBubble(count);
+      const source = event?.detail?.data?.source;
+      if (source && source !== 'comforsh-cart' && !event?.detail?.data?.didError) {
+        show({{ 'comforsh.product.added_to_cart' | t | json }});
+        openDrawer();
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,40 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Footer",
+  "sections": {
+    "comforsh_footer": {
+      "type": "comforsh-footer",
+      "settings": {
+        "col1_title": "Unsere Serien",
+        "col1_menu": "series",
+        "col2_title": "Kundenservice",
+        "col2_menu": "footer",
+        "logo_text": "Comforsh",
+        "show_logo_dot": true,
+        "newsletter_heading": "Jetzt anmelden und Rabatt sichern!",
+        "email_placeholder": "E-Mail",
+        "submit_label": "Abonnieren",
+        "success_message": "Danke für Ihre Anmeldung!",
+        "instagram": "https://instagram.com/",
+        "facebook": "https://facebook.com/",
+        "tiktok": "https://tiktok.com/",
+        "pinterest": "https://pinterest.com/",
+        "show_localization": true,
+        "locale_label": "Land/Region",
+        "show_language": true
+      }
+    }
+  },
+  "order": [
+    "comforsh_footer"
+  ]
+}

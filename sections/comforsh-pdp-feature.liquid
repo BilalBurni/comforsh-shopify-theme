@@ -1,0 +1,241 @@
+{%- comment -%}
+  Premium PDP feature — image + text split (alternating).
+{%- endcomment -%}
+
+{% liquid
+  assign image_position = section.settings.image_position | default: 'left'
+%}
+
+<section
+  class="cfp-feat cfp-feat--image-{{ image_position }}"
+  style="
+    --cfp-feat-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-feat-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="page-width cfp-feat__inner">
+    <div class="cfp-feat__media">
+      {% if section.settings.image != blank %}
+        {{
+          section.settings.image
+          | image_url: width: 1400
+          | image_tag:
+            loading: 'lazy',
+            widths: '600, 900, 1200, 1400',
+            sizes: '(min-width: 990px) 45vw, 100vw',
+            class: 'cfp-feat__img',
+            alt: section.settings.heading
+        }}
+      {% elsif section.settings.fallback_image_url != blank %}
+        <img
+          class="cfp-feat__img"
+          src="{{ section.settings.fallback_image_url | escape }}"
+          alt="{{ section.settings.heading | escape }}"
+          loading="lazy"
+          width="900"
+          height="1100"
+        >
+      {% else %}
+        {{ 'lifestyle-1' | placeholder_svg_tag: 'cfp-feat__img' }}
+      {% endif %}
+    </div>
+
+    <div class="cfp-feat__copy">
+      {% if section.settings.eyebrow != blank %}
+        <p class="cfp-feat__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      {% if section.settings.heading != blank %}
+        <h2 class="cfp-feat__heading">{{ section.settings.heading | escape }}</h2>
+      {% endif %}
+      {% if section.settings.text != blank %}
+        <p class="cfp-feat__text">{{ section.settings.text | escape }}</p>
+      {% endif %}
+      {% if section.settings.button_label != blank %}
+        <a
+          class="cfp-feat__btn"
+          href="{{ section.settings.button_link | default: routes.all_products_collection_url }}"
+        >
+          {{ section.settings.button_label | escape }}
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-feat {
+    background: #ffffff;
+    padding: var(--cfp-feat-pad-top, 72px) 0 var(--cfp-feat-pad-bottom, 72px);
+  }
+
+  .cfp-feat__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfp-feat__inner {
+      grid-template-columns: 1fr 1fr;
+      gap: 4.5rem;
+    }
+
+    .cfp-feat--image-right .cfp-feat__media {
+      order: 2;
+    }
+  }
+
+  .cfp-feat__media {
+    overflow: hidden;
+    border-radius: 18px;
+    background: #f3f3f3;
+    aspect-ratio: 4 / 5;
+  }
+
+  .cfp-feat__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .cfp-feat__copy {
+    max-width: 34rem;
+  }
+
+  .cfp-feat__eyebrow {
+    margin: 0 0 0.65rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .cfp-feat__heading {
+    margin: 0 0 1rem;
+    font-size: clamp(1.75rem, 3.5vw, 2.45rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.12;
+    color: #111111;
+  }
+
+  .cfp-feat__text {
+    margin: 0 0 1.5rem;
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: #4b5563;
+    max-width: 38ch;
+  }
+
+  .cfp-feat__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0.85rem 1.6rem;
+    background: #822c1d;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 6px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .cfp-feat__btn:hover {
+    background: #6b2317;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "PDP Feature",
+  "tag": "section",
+  "class": "section-cfp-feat",
+  "enabled_on": {
+    "templates": ["product", "index"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Feel the difference every day"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Ergonomic comfort that lasts"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Text",
+      "default": "Designed for posture, recovery and everyday wellbeing — at home, in the office and on the go."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "SHOP NOW"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "text",
+      "id": "fallback_image_url",
+      "label": "Fallback image URL"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 72
+    }
+  ],
+  "presets": [
+    {
+      "name": "PDP Feature"
+    }
+  ]
+}
+{% endschema %}

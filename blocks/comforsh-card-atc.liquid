@@ -1,0 +1,156 @@
+{% liquid
+  assign product = closest.product
+  if request.visual_preview_mode and product == blank
+    assign product = collections.all.products.first
+  endif
+
+  assign variant = product.selected_or_first_available_variant
+  assign form_id = 'ComforshCardAtc-' | append: section.id | append: '-' | append: product.id | append: '-' | append: block.id
+  assign label = block.settings.label | default: 'In den Warenkorb'
+  assign choose_label = block.settings.choose_label | default: 'Optionen wählen'
+  assign use_choose = false
+
+  if block.settings.multi_variant_behavior == 'choose' and product.has_only_default_variant == false and product.variants.size > 1
+    assign use_choose = true
+  endif
+%}
+
+<div class="cfp-card-atc" {{ block.shopify_attributes }}>
+  {% if product == blank %}
+    <button type="button" class="cfp-card-atc__btn" disabled>{{ label | escape }}</button>
+  {% elsif use_choose %}
+    <a class="cfp-card-atc__btn" href="{{ product.url }}">{{ choose_label | escape }}</a>
+  {% else %}
+    <product-form-component
+      data-section-id="{{ section.id }}"
+      data-product-id="{{ product.id }}"
+      data-product-url="{{ product.url }}"
+      on:submit="/handleSubmit"
+      data-quantity-default="1"
+    >
+      <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+      {% form 'product', product, id: form_id, data-type: 'add-to-cart-form' %}
+        <input
+          type="hidden"
+          name="id"
+          ref="variantId"
+          value="{{ variant.id }}"
+          {% unless variant.available %}disabled{% endunless %}
+        >
+        <input type="hidden" name="quantity" value="1">
+        <button
+          type="submit"
+          name="add"
+          class="cfp-card-atc__btn"
+          {% unless variant.available %}disabled{% endunless %}
+        >
+          {% if variant.available %}
+            {{ label | escape }}
+          {% else %}
+            {{ block.settings.sold_out_label | default: 'Ausverkauft' | escape }}
+          {% endif %}
+        </button>
+      {% endform %}
+    </product-form-component>
+  {% endif %}
+</div>
+
+{% stylesheet %}
+  .cfp-card-atc {
+    width: 100%;
+    margin-top: 0.35rem;
+  }
+
+  .cfp-card-atc product-form-component,
+  .cfp-card-atc form {
+    display: block;
+    width: 100%;
+  }
+
+  .cfp-card-atc__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 42px;
+    padding: 0.65rem 0.85rem;
+    border: none;
+    border-radius: 4px;
+    background: #822c1d;
+    color: #ffffff !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .cfp-card-atc__btn:hover:not(:disabled) {
+    background: #6b2317;
+    color: #ffffff !important;
+  }
+
+  .cfp-card-atc__btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  /* Keep ATC clickable even if product-card link wraps content */
+  .product-card .cfp-card-atc,
+  .product-card .cfp-card-atc__btn {
+    position: relative;
+    z-index: 3;
+    pointer-events: auto;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Card Add to Cart",
+  "tag": null,
+  "settings": [
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Button label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "choose_label",
+      "label": "Choose options label",
+      "default": "Choose options"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Sold out label",
+      "default": "Ausverkauft"
+    },
+    {
+      "type": "select",
+      "id": "multi_variant_behavior",
+      "label": "Products with variants",
+      "options": [
+        {
+          "value": "add_first",
+          "label": "Add first available variant"
+        },
+        {
+          "value": "choose",
+          "label": "Link to product page"
+        }
+      ],
+      "default": "add_first"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Card Add to Cart"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,37 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-order",
+      "settings": {
+        "back_label": "Zurück zum Konto",
+        "heading": "Bestellung",
+        "items_heading": "Bestellte Artikel",
+        "qty_label": "Menge",
+        "summary_heading": "Zusammenfassung",
+        "subtotal_label": "Zwischensumme",
+        "discount_label": "Rabatt",
+        "shipping_label": "Versand",
+        "tax_label": "Steuern",
+        "total_label": "Gesamt",
+        "shipping_heading": "Lieferadresse",
+        "billing_heading": "Rechnungsadresse",
+        "no_shipping": "Keine Lieferadresse vorhanden.",
+        "no_billing": "Keine Rechnungsadresse vorhanden.",
+        "padding_top": 64,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

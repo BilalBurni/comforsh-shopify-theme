@@ -1,0 +1,94 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "collections_grid": {
+      "type": "comforsh-collections-grid",
+      "blocks": {
+        "col_1": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "back-posture-support",
+            "title": "Rücken- & Haltungshilfe",
+            "text": ""
+          }
+        },
+        "col_2": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "sleep-pregnancy-comfort",
+            "title": "Schlaf- & Schwangerschaftskomfort",
+            "text": ""
+          }
+        },
+        "col_3": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "seat-cushions",
+            "title": "Sitzkissen (Büro & Zuhause)",
+            "text": ""
+          }
+        },
+        "col_4": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "bike-motorcycle-outdoor-seating",
+            "title": "Fahrrad-, Motorrad- & Outdoor-Sitze",
+            "text": ""
+          }
+        },
+        "col_5": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "desk-wrist-comfort",
+            "title": "Schreibtisch- & Handgelenkskomfort",
+            "text": ""
+          }
+        },
+        "col_6": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "neck-travel-comfort",
+            "title": "Nacken- & Reisekomfort",
+            "text": ""
+          }
+        },
+        "col_7": {
+          "type": "collection_card",
+          "settings": {
+            "collection": "pain-relief-massage",
+            "title": "Schmerzlinderung & Massage",
+            "text": ""
+          }
+        }
+      },
+      "block_order": [
+        "col_1",
+        "col_2",
+        "col_3",
+        "col_4",
+        "col_5",
+        "col_6",
+        "col_7"
+      ],
+      "settings": {
+        "home_label": "Startseite",
+        "title": "Alle Kollektionen",
+        "subtitle": "Ergonomischen Komfort nach Kategorie entdecken \u2014 Haltung, Schlaf, Sitzen und mehr.",
+        "shop_label": "Jetzt shoppen",
+        "padding_top": 48,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "collections_grid"
+  ]
+}

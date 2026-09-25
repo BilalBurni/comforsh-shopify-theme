@@ -1,0 +1,997 @@
+{% liquid
+  assign products_per_page = section.settings.products_per_page | default: 16
+  assign columns = section.settings.columns | default: 4
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign show_atc = section.settings.show_atc
+  assign show_tabs = section.settings.show_tabs
+  assign tab_mode = 'auto'
+  assign valid_tab_blocks = 0
+  for block in section.blocks
+    if block.type == 'collection_tab' and block.settings.collection != blank
+      assign valid_tab_blocks = valid_tab_blocks | plus: 1
+    endif
+  endfor
+  if valid_tab_blocks > 0
+    assign tab_mode = 'blocks'
+  endif
+%}
+
+<section
+  class="cfcol"
+  id="ComforshCollection-{{ section.id }}"
+  style="--cfcol-columns: {{ columns }};"
+  data-cfcol-tabs
+>
+  <div class="page-width cfcol__inner">
+    <nav class="cfcol__crumbs" aria-label="Breadcrumb">
+      <a href="{{ routes.root_url }}">{{ section.settings.home_label | default: 'Startseite' | escape }}</a>
+      <span class="cfcol__crumb-sep" aria-hidden="true">/</span>
+      <span>{{ collection.title | escape }}</span>
+    </nav>
+
+    <header class="cfcol__header">
+      <h1 class="cfcol__title">{{ collection.title | escape }}</h1>
+      {% if collection.description != blank and section.settings.show_description %}
+        <div class="cfcol__desc rte">{{ collection.description }}</div>
+      {% endif %}
+    </header>
+
+    <div class="cfcol__toolbar">
+      <button
+        type="button"
+        class="cfcol__filter-btn"
+        data-cfcol-filter-toggle
+        aria-expanded="false"
+        aria-controls="CfcolFilter-{{ section.id }}"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M4 6h16M7 12h10M10 18h4"/>
+        </svg>
+        <span>{{ section.settings.filter_label | default: 'Filter' | escape }}</span>
+      </button>
+
+      <p class="cfcol__count">
+        {{ collection.products_count }}
+        {% if collection.products_count == 1 %}
+          {{ section.settings.product_singular | default: 'product' | escape }}
+        {% else %}
+          {{ section.settings.product_plural | default: 'products' | escape }}
+        {% endif %}
+      </p>
+    </div>
+
+    <div
+      class="cfcol__filter-panel"
+      id="CfcolFilter-{{ section.id }}"
+      data-cfcol-filter-panel
+      hidden
+    >
+      <div class="cfcol__filter-row">
+        <label class="cfcol__filter-label" for="CfcolSort-{{ section.id }}">
+          {{ section.settings.sort_label | default: 'Sort by' | escape }}
+        </label>
+        <select
+          id="CfcolSort-{{ section.id }}"
+          class="cfcol__sort-select"
+          data-cfcol-sort
+        >
+          {% for option in collection.sort_options %}
+            <option value="{{ option.value }}" {% if option.value == sort_by %}selected{% endif %}>
+              {{ option.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {% if collection.filters.size > 0 %}
+        <form class="cfcol__filters" data-cfcol-filters>
+          {% for filter in collection.filters %}
+            {% if filter.type == 'list' or filter.type == 'boolean' %}
+              <fieldset class="cfcol__filter-group">
+                <legend class="cfcol__filter-label">{{ filter.label | escape }}</legend>
+                <div class="cfcol__filter-options">
+                  {% for value in filter.values %}
+                    <label class="cfcol__check">
+                      <input
+                        type="checkbox"
+                        name="{{ value.param_name }}"
+                        value="{{ value.value }}"
+                        {% if value.active %}checked{% endif %}
+                        {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                      >
+                      <span>{{ value.label | escape }}{% if value.count %} ({{ value.count }}){% endif %}</span>
+                    </label>
+                  {% endfor %}
+                </div>
+              </fieldset>
+            {% endif %}
+          {% endfor %}
+          <div class="cfcol__filter-actions">
+            <button type="submit" class="cfcol__apply">
+              {{ section.settings.apply_label | default: 'Apply' | escape }}
+            </button>
+            <a class="cfcol__clear" href="{{ collection.url }}">
+              {{ section.settings.clear_label | default: 'Clear' | escape }}
+            </a>
+          </div>
+        </form>
+      {% endif %}
+    </div>
+
+    {% if show_tabs %}
+      <div class="cfcol__tabs-wrap">
+        <div class="cfcol__tabs" role="tablist" aria-label="{{ section.settings.tabs_label | default: 'Collections' | escape }}">
+          {% if section.settings.show_all_tab %}
+            <a
+              class="cfcol__tab{% if collection.handle == 'all' %} is-active{% endif %}"
+              href="{{ routes.all_products_collection_url }}"
+              role="tab"
+              aria-selected="{% if collection.handle == 'all' %}true{% else %}false{% endif %}"
+              data-cfcol-tab="all"
+            >
+              {{ section.settings.all_tab_label | default: 'All' | escape }}
+            </a>
+          {% endif %}
+
+          {% if tab_mode == 'blocks' %}
+            {% for block in section.blocks %}
+              {% if block.type == 'collection_tab' and block.settings.collection != blank %}
+                {% assign tab_collection = block.settings.collection %}
+                <a
+                  class="cfcol__tab{% if collection.handle == tab_collection.handle %} is-active{% endif %}"
+                  href="{{ tab_collection.url }}"
+                  role="tab"
+                  aria-selected="{% if collection.handle == tab_collection.handle %}true{% else %}false{% endif %}"
+                  data-cfcol-tab="{{ tab_collection.handle | escape }}"
+                  {{ block.shopify_attributes }}
+                >
+                  {{ block.settings.label | default: tab_collection.title | escape }}
+                </a>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            {% for tab_collection in collections %}
+              {% if tab_collection.handle != 'all' and tab_collection.handle != 'frontpage' and tab_collection.products_count > 0 %}
+                <a
+                  class="cfcol__tab{% if collection.handle == tab_collection.handle %} is-active{% endif %}"
+                  href="{{ tab_collection.url }}"
+                  role="tab"
+                  aria-selected="{% if collection.handle == tab_collection.handle %}true{% else %}false{% endif %}"
+                  data-cfcol-tab="{{ tab_collection.handle | escape }}"
+                >
+                  {{ tab_collection.title | escape }}
+                </a>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% paginate collection.products by products_per_page %}
+      {% if collection.products.size == 0 %}
+        <div class="cfcol__empty">
+          <p>{{ section.settings.empty_text | default: 'No products in this collection yet.' | escape }}</p>
+          <a class="cfcol__empty-btn" href="{{ routes.all_products_collection_url }}">
+            {{ section.settings.empty_button | default: 'View all products' | escape }}
+          </a>
+        </div>
+      {% else %}
+        <div class="cfcol__grid">
+          {% for product in collection.products %}
+            {% liquid
+              assign variant = product.selected_or_first_available_variant
+              assign on_sale = false
+              assign save_pct = 0
+              if variant.compare_at_price > variant.price
+                assign on_sale = true
+                assign save_pct = variant.compare_at_price | minus: variant.price | times: 100.0 | divided_by: variant.compare_at_price | round
+              endif
+            %}
+            <article class="cfcol__card">
+              <a class="cfcol__media" href="{{ product.url }}">
+                {% if product.featured_media != blank %}
+                  {{
+                    product.featured_media
+                    | image_url: width: 900
+                    | image_tag:
+                      class: 'cfcol__img',
+                      loading: 'lazy',
+                      widths: '300, 450, 600, 900',
+                      sizes: '(min-width: 990px) 22vw, 45vw',
+                      alt: product.title
+                  }}
+                {% else %}
+                  {{ 'product-1' | placeholder_svg_tag: 'cfcol__img cfcol__img--placeholder' }}
+                {% endif %}
+
+                {% if variant.available == false %}
+                  <span class="cfcol__badge">{{ section.settings.sold_out_label | default: 'SOLD OUT' | escape }}</span>
+                {% elsif on_sale and save_pct > 0 %}
+                  <span class="cfcol__badge">
+                    {{ section.settings.save_label | default: 'SAVE' | escape }} {{ save_pct }}%
+                  </span>
+                {% endif %}
+              </a>
+
+              <div class="cfcol__card-body">
+                <h2 class="cfcol__card-title">
+                  <a href="{{ product.url }}">{{ product.title | escape }}</a>
+                </h2>
+                <p class="cfcol__card-price">
+                  {% if on_sale %}
+                    <span class="cfcol__price-compare">{{ variant.compare_at_price | money }}</span>
+                    <span class="cfcol__price-sale">{{ variant.price | money }}</span>
+                  {% else %}
+                    <span class="cfcol__price-sale">{{ variant.price | money }}</span>
+                  {% endif %}
+                </p>
+
+                {% if show_atc %}
+                  {% if variant.available %}
+                    <button
+                      type="button"
+                      class="cfcol__atc"
+                      data-cfcol-atc
+                      data-variant-id="{{ variant.id }}"
+                      data-product-title="{{ product.title | escape }}"
+                    >
+                      {{ section.settings.atc_label | default: 'Add to cart' | escape }}
+                    </button>
+                  {% else %}
+                    <a class="cfcol__atc" href="{{ product.url }}">
+                      {{ section.settings.view_label | default: 'View' | escape }}
+                    </a>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+
+        {% if paginate.pages > 1 %}
+          <nav class="cfcol__pagination" aria-label="Pagination">
+            {% if paginate.previous %}
+              <a class="cfcol__page-btn" href="{{ paginate.previous.url }}">{{ section.settings.prev_label | default: 'Previous' | escape }}</a>
+            {% else %}
+              <span class="cfcol__page-btn is-disabled">{{ section.settings.prev_label | default: 'Previous' | escape }}</span>
+            {% endif %}
+
+            <span class="cfcol__page-status">
+              {{ paginate.current_page }} / {{ paginate.pages }}
+            </span>
+
+            {% if paginate.next %}
+              <a class="cfcol__page-btn" href="{{ paginate.next.url }}">{{ section.settings.next_label | default: 'Next' | escape }}</a>
+            {% else %}
+              <span class="cfcol__page-btn is-disabled">{{ section.settings.next_label | default: 'Next' | escape }}</span>
+            {% endif %}
+          </nav>
+        {% endif %}
+      {% endif %}
+    {% endpaginate %}
+  </div>
+</section>
+
+<script>
+  (() => {
+    const root = document.getElementById('ComforshCollection-{{ section.id }}');
+    if (!root) return;
+
+    const toggle = root.querySelector('[data-cfcol-filter-toggle]');
+    const panel = root.querySelector('[data-cfcol-filter-panel]');
+    if (toggle && panel) {
+      toggle.addEventListener('click', () => {
+        const open = panel.hasAttribute('hidden');
+        if (open) {
+          panel.removeAttribute('hidden');
+          toggle.setAttribute('aria-expanded', 'true');
+        } else {
+          panel.setAttribute('hidden', '');
+          toggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    const sort = root.querySelector('[data-cfcol-sort]');
+    if (sort) {
+      sort.addEventListener('change', () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort_by', sort.value);
+        window.location.href = url.toString();
+      });
+    }
+
+    const filterForm = root.querySelector('[data-cfcol-filters]');
+    if (filterForm) {
+      filterForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const url = new URL(window.location.href);
+        const kept = url.searchParams.get('sort_by');
+        [...url.searchParams.keys()].forEach((key) => {
+          if (key.startsWith('filter.') || key === 'page') url.searchParams.delete(key);
+        });
+        const data = new FormData(filterForm);
+        data.forEach((value, key) => {
+          url.searchParams.append(key, value);
+        });
+        if (kept) url.searchParams.set('sort_by', kept);
+        window.location.href = url.toString();
+      });
+    }
+
+    root.querySelectorAll('[data-cfcol-atc]').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        if (!window.ComforshCart) return;
+        const id = btn.getAttribute('data-variant-id');
+        const title = btn.getAttribute('data-product-title') || '';
+        const original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          await window.ComforshCart.add({ id, quantity: 1, title });
+          btn.textContent = '✓';
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.disabled = false;
+          }, 1400);
+        } catch (e) {
+          btn.textContent = original;
+          btn.disabled = false;
+        }
+      });
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .cfcol {
+    background: #ffffff;
+    color: #111111;
+    padding: 1.5rem 0 4rem;
+  }
+
+  .cfcol__inner {
+    max-width: var(--page-width, 1280px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfcol__crumbs {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0 0 1.25rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #9ca3af;
+  }
+
+  .cfcol__crumbs a {
+    color: #9ca3af !important;
+    text-decoration: none !important;
+  }
+
+  .cfcol__crumbs a:hover {
+    color: #111111 !important;
+  }
+
+  .cfcol__crumb-sep {
+    opacity: 0.7;
+  }
+
+  .cfcol__header {
+    margin-bottom: 1.25rem;
+  }
+
+  .cfcol__title {
+    margin: 0;
+    font-size: clamp(2rem, 4.5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #111111;
+  }
+
+  .cfcol__desc {
+    margin: 0.85rem 0 0;
+    max-width: 52ch;
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: #6b7280;
+  }
+
+  .cfcol__desc p {
+    margin: 0;
+  }
+
+  .cfcol__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.95rem 0;
+    border-top: 1px solid #e5e5e5;
+    border-bottom: 1px solid #e5e5e5;
+    margin-bottom: 1.15rem;
+  }
+
+  .cfcol__tabs-wrap {
+    margin: 0 0 1.75rem;
+  }
+
+  .cfcol__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    overflow: visible;
+  }
+
+  .cfcol__tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #4b5563 !important;
+    text-decoration: none !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1.25;
+    text-align: center;
+    transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .cfcol__tab:hover {
+    color: #111111 !important;
+    border-color: #111111;
+  }
+
+  .cfcol__tab.is-active {
+    color: #ffffff !important;
+    background: #822c1d;
+    border-color: #111111;
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfcol__tab {
+      font-size: 0.74rem;
+      padding: 0.6rem 1rem;
+    }
+  }
+
+  .cfcol__filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #111111;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .cfcol__filter-btn:hover {
+    opacity: 0.7;
+  }
+
+  .cfcol__count {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6b7280;
+  }
+
+  .cfcol__filter-panel {
+    margin: -0.75rem 0 1.75rem;
+    padding: 1.25rem;
+    border: 1px solid #e5e5e5;
+    background: #fafafa;
+  }
+
+  .cfcol__filter-panel[hidden] {
+    display: none !important;
+  }
+
+  .cfcol__filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .cfcol__filter-label {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #111111;
+  }
+
+  .cfcol__sort-select {
+    min-height: 42px;
+    min-width: 220px;
+    border: 1px solid #d4d4d4;
+    border-radius: 4px;
+    background: #ffffff;
+    padding: 0.5rem 0.8rem;
+    font: inherit;
+    font-size: 0.9rem;
+    color: #111111;
+  }
+
+  .cfcol__filter-group {
+    margin: 0 0 1rem;
+    padding: 0;
+    border: 0;
+  }
+
+  .cfcol__filter-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem 1rem;
+    margin-top: 0.55rem;
+  }
+
+  .cfcol__check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.88rem;
+    color: #374151;
+    cursor: pointer;
+  }
+
+  .cfcol__filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    margin-top: 0.5rem;
+  }
+
+  .cfcol__apply {
+    min-height: 42px;
+    padding: 0.65rem 1.35rem;
+    border: 1px solid #111111;
+    border-radius: 4px;
+    background: #822c1d;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .cfcol__apply:hover {
+    background: #6b2317;
+  }
+
+  .cfcol__clear {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280 !important;
+    text-decoration: underline !important;
+  }
+
+  .cfcol__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem 1rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .cfcol__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2.5rem 1.35rem;
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .cfcol__grid {
+      grid-template-columns: repeat(var(--cfcol-columns, 4), minmax(0, 1fr));
+      gap: 2.75rem 1.5rem;
+    }
+  }
+
+  .cfcol__card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .cfcol__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #f3f3f3;
+    text-decoration: none !important;
+  }
+
+  .cfcol__img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.35s ease;
+  }
+
+  .cfcol__img--placeholder {
+    opacity: 0.35;
+  }
+
+  .cfcol__card:hover .cfcol__img {
+    transform: scale(1.03);
+  }
+
+  .cfcol__badge {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+    z-index: 1;
+    padding: 0.28rem 0.55rem;
+    border-radius: 999px;
+    background: #822c1d;
+    color: #ffffff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .cfcol__card-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    gap: 0.45rem;
+    padding: 0.95rem 0.25rem 0;
+    text-align: center;
+  }
+
+  .cfcol__card-title {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #111111;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .cfcol__card-title a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  .cfcol__card-title a:hover {
+    opacity: 0.7;
+  }
+
+  .cfcol__card-price {
+    margin: 0.45rem 0 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #111111;
+  }
+
+  .cfcol__price-compare {
+    font-weight: 500;
+    color: #9ca3af;
+    text-decoration: line-through;
+  }
+
+  .cfcol__price-sale {
+    font-weight: 700;
+    color: #111111;
+  }
+
+  .cfcol__atc {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    height: 44px;
+    margin-top: auto;
+    border: 1px solid #111111;
+    border-radius: 4px;
+    background: #822c1d;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+  }
+
+  .cfcol__atc:hover:not(:disabled) {
+    background: #6b2317;
+  }
+
+  .cfcol__atc:disabled {
+    opacity: 0.7;
+    cursor: wait;
+  }
+
+  .cfcol__empty {
+    text-align: center;
+    padding: 4.5rem 1rem;
+  }
+
+  .cfcol__empty p {
+    margin: 0 0 1.25rem;
+    color: #6b7280;
+  }
+
+  .cfcol__empty-btn,
+  .cfcol__page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    min-width: 120px;
+    padding: 0.85rem 1.6rem;
+    border: 1px solid #111111;
+    border-radius: 4px;
+    background: #822c1d;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .cfcol__empty-btn:hover,
+  .cfcol__page-btn:not(.is-disabled):hover {
+    background: #6b2317;
+  }
+
+  .cfcol__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  .cfcol__page-btn {
+    background: #ffffff;
+    color: #111111 !important;
+  }
+
+  .cfcol__page-btn:not(.is-disabled):hover {
+    background: #6b2317;
+    color: #ffffff !important;
+  }
+
+  .cfcol__page-btn.is-disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .cfcol__page-status {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cfcol__img {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Comforsh Collection",
+  "tag": "section",
+  "class": "section-comforsh-collection",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "home_label",
+      "label": "Breadcrumb home label",
+      "default": "Startseite"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Collection tabs"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tabs",
+      "label": "Show collection tabs",
+      "default": true,
+      "info": "Add tab blocks below, or leave empty to auto-list all collections with products."
+    },
+    {
+      "type": "text",
+      "id": "tabs_label",
+      "label": "Tabs accessibility label",
+      "default": "Collections"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all_tab",
+      "label": "Show All tab",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "all_tab_label",
+      "label": "All tab label",
+      "default": "All"
+    },
+    {
+      "type": "text",
+      "id": "filter_label",
+      "label": "Filter button label",
+      "default": "Filter"
+    },
+    {
+      "type": "text",
+      "id": "sort_label",
+      "label": "Sort label",
+      "default": "Sort by"
+    },
+    {
+      "type": "text",
+      "id": "apply_label",
+      "label": "Apply filters label",
+      "default": "Apply"
+    },
+    {
+      "type": "text",
+      "id": "clear_label",
+      "label": "Clear filters label",
+      "default": "Clear"
+    },
+    {
+      "type": "text",
+      "id": "product_singular",
+      "label": "Product count singular",
+      "default": "Produkt"
+    },
+    {
+      "type": "text",
+      "id": "product_plural",
+      "label": "Product count plural",
+      "default": "Produkte"
+    },
+    {
+      "type": "text",
+      "id": "save_label",
+      "label": "Sale badge prefix",
+      "default": "SAVE"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Sold out badge",
+      "default": "SOLD OUT"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_atc",
+      "label": "Show add to cart on cards",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "atc_label",
+      "label": "Add to cart label",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "view_label",
+      "label": "View product label",
+      "default": "View"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "label": "Desktop columns",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "label": "Products per page",
+      "default": 16
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Empty collection text",
+      "default": "No products in this collection yet."
+    },
+    {
+      "type": "text",
+      "id": "empty_button",
+      "label": "Empty collection button",
+      "default": "View all products"
+    },
+    {
+      "type": "text",
+      "id": "prev_label",
+      "label": "Previous page label",
+      "default": "Previous"
+    },
+    {
+      "type": "text",
+      "id": "next_label",
+      "label": "Next page label",
+      "default": "Next"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection_tab",
+      "name": "Collection tab",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Collection"
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Tab label",
+          "info": "Optional. Defaults to collection title."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comforsh Collection"
+    }
+  ]
+}
+{% endschema %}

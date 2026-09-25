@@ -1,0 +1,269 @@
+{%- comment -%}
+  Continuous black marquee announcement bar.
+  Blocks = ticker items (icon + text + optional CTA).
+{%- endcomment -%}
+
+{% liquid
+  assign slides = section.blocks
+  assign duration = section.settings.speed | default: 24
+%}
+
+{% if slides.size > 0 %}
+  <aside
+    class="cfp-marquee"
+    id="ComforshAnnounce-{{ section.id }}"
+    style="
+      --cfp-marquee-bg: {{ section.settings.background }};
+      --cfp-marquee-text: {{ section.settings.text_color }};
+      --cfp-marquee-btn-bg: {{ section.settings.button_bg }};
+      --cfp-marquee-btn-text: {{ section.settings.button_text_color }};
+      --cfp-marquee-duration: {{ duration }}s;
+      --cfp-marquee-play: running;
+    "
+    aria-label="{{ section.settings.accessibility_label | escape }}"
+  >
+    <div class="cfp-marquee__viewport">
+      <div class="cfp-marquee__track">
+        {%- comment -%} Duplicate groups for seamless infinite loop {%- endcomment -%}
+        {% for pass in (1..4) %}
+          <div class="cfp-marquee__group" {% if pass > 1 %}aria-hidden="true"{% endif %}>
+            {% for block in slides %}
+              {% liquid
+                assign item_text_key = 'comforsh.announce.item_' | append: forloop.index
+                assign item_text = item_text_key | t
+                if item_text == item_text_key or item_text contains 'Translation missing'
+                  assign item_text = block.settings.text | escape
+                endif
+
+                assign item_btn = 'comforsh.announce.shop_now' | t
+                if item_btn == 'comforsh.announce.shop_now' or item_btn contains 'Translation missing'
+                  assign item_btn = block.settings.button_label | escape
+                endif
+              %}
+              <div class="cfp-marquee__item" {% if pass == 1 %}{{ block.shopify_attributes }}{% endif %}>
+                {% if block.settings.show_icon %}
+                  <span class="cfp-marquee__icon" aria-hidden="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                  </span>
+                {% endif %}
+                {% if block.settings.link != blank %}
+                  <a class="cfp-marquee__text" href="{{ block.settings.link }}" tabindex="{% if pass == 1 %}0{% else %}-1{% endif %}">
+                    {{- item_text -}}
+                  </a>
+                {% else %}
+                  <span class="cfp-marquee__text">{{ item_text }}</span>
+                {% endif %}
+                {% if item_btn != blank %}
+                  <a
+                    class="cfp-marquee__btn"
+                    href="{{ block.settings.button_link | default: block.settings.link | default: routes.all_products_collection_url }}"
+                    tabindex="{% if pass == 1 %}0{% else %}-1{% endif %}"
+                  >
+                    {{ item_btn }}
+                  </a>
+                {% endif %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </aside>
+{% endif %}
+
+{% stylesheet %}
+  .cfp-marquee {
+    background: var(--cfp-marquee-bg, #000000);
+    color: var(--cfp-marquee-text, #ffffff);
+    overflow: hidden;
+    width: 100%;
+    z-index: var(--layer-raised);
+    position: relative;
+  }
+
+  .cfp-marquee__viewport {
+    overflow: hidden;
+    width: 100%;
+  }
+
+  .cfp-marquee__track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: cfp-marquee-scroll var(--cfp-marquee-duration, 24s) linear infinite;
+    animation-play-state: running;
+  }
+
+  .cfp-marquee:hover .cfp-marquee__track,
+  .cfp-marquee:focus-within .cfp-marquee__track {
+    animation-play-state: paused;
+  }
+
+  .cfp-marquee__group {
+    display: flex;
+    align-items: center;
+    gap: 2.75rem;
+    padding-inline: 1.35rem;
+    min-height: 2.65rem;
+    flex-shrink: 0;
+  }
+
+  .cfp-marquee__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .cfp-marquee__icon {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    opacity: 0.95;
+  }
+
+  .cfp-marquee__icon svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+  }
+
+  .cfp-marquee__text {
+    color: inherit;
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+
+  .cfp-marquee__btn {
+    /* Size overrides live in base.css unified button system */
+    background: var(--cfp-marquee-btn-bg, #ffffff);
+    color: var(--cfp-marquee-btn-text, #111111) !important;
+  }
+
+  /* 4 equal groups → move 25% for seamless loop */
+  @keyframes cfp-marquee-scroll {
+    from { transform: translate3d(0, 0, 0); }
+    to { transform: translate3d(-25%, 0, 0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cfp-marquee__track {
+      animation: none;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .cfp-marquee__group:not(:first-child) {
+      display: none;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Announce marquee",
+  "class": "section-comforsh-announcement",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "settings": [
+    {
+      "type": "color",
+      "id": "background",
+      "label": "Background",
+      "default": "#000000"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "button_bg",
+      "label": "Button background",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#111111"
+    },
+    {
+      "type": "range",
+      "id": "speed",
+      "min": 10,
+      "max": 60,
+      "step": 2,
+      "unit": "s",
+      "label": "Marquee speed",
+      "default": 24
+    },
+    {
+      "type": "text",
+      "id": "accessibility_label",
+      "label": "Accessibility label",
+      "default": "Announcements"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Ticker item",
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "show_icon",
+          "label": "Show icon",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "FREE SHIPPING WORLDWIDE"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Text link"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "default": "SHOP NOW"
+        },
+        {
+          "type": "url",
+          "id": "button_link",
+          "label": "Button link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Announce marquee",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "text": "FREE SHIPPING WORLDWIDE",
+            "button_label": "SHOP NOW"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

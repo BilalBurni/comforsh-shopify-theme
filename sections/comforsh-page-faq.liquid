@@ -1,0 +1,301 @@
+{%- comment -%}
+  FAQ page — reusable OS 2.0 section with accordion blocks.
+{%- endcomment -%}
+
+<section
+  class="cfp-page-faq"
+  style="
+    --cfp-faq-pad-top: {{ section.settings.padding_top }}px;
+    --cfp-faq-pad-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="cfp-page-faq__hero">
+    <div class="page-width cfp-page-faq__hero-inner">
+      {% if section.settings.eyebrow != blank %}
+        <p class="cfp-page-faq__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      <h1 class="cfp-page-faq__title">{{ section.settings.title | escape }}</h1>
+      {% if section.settings.subtitle != blank %}
+        <p class="cfp-page-faq__sub">{{ section.settings.subtitle | escape }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="page-width cfp-page-faq__inner">
+    <div class="cfp-page-faq__list">
+      {% for block in section.blocks %}
+        <details
+          class="cfp-page-faq__item"
+          {{ block.shopify_attributes }}
+          {% if forloop.first and section.settings.open_first %}open{% endif %}
+        >
+          <summary class="cfp-page-faq__summary">
+            <span class="cfp-page-faq__question">{{ block.settings.question | escape }}</span>
+            <span class="cfp-page-faq__icon" aria-hidden="true">+</span>
+          </summary>
+          <div class="cfp-page-faq__answer">
+            {{ block.settings.answer }}
+          </div>
+        </details>
+      {% endfor %}
+    </div>
+
+    {% if section.settings.cta_label != blank %}
+      <div class="cfp-page-faq__cta">
+        {% if section.settings.cta_text != blank %}
+          <p>{{ section.settings.cta_text | escape }}</p>
+        {% endif %}
+        <a class="cfp-page-faq__btn" href="{{ section.settings.cta_link | default: '/pages/contact' }}">
+          {{ section.settings.cta_label | escape }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-page-faq {
+    --cfp-bg: var(--color-comforsh-bg, #faf9f6);
+    --cfp-text: var(--color-comforsh-text, #1f2937);
+    --cfp-sage: var(--color-comforsh-accent, #822c1d);
+    --cfp-radius: var(--comforsh-radius, 12px);
+    background: var(--cfp-bg);
+    color: var(--cfp-text);
+    padding-bottom: var(--cfp-faq-pad-bottom, 80px);
+  }
+
+  .cfp-page-faq__hero {
+    background: linear-gradient(180deg, #eef2f0 0%, var(--cfp-bg) 100%);
+    border-bottom: 1px solid #e8e8e8;
+    padding: 3.5rem 0 2.75rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .cfp-page-faq__hero-inner,
+  .cfp-page-faq__inner {
+    max-width: 820px;
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-page-faq__eyebrow {
+    margin: 0 0 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--cfp-sage);
+  }
+
+  .cfp-page-faq__title {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.85rem, 3.5vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfp-page-faq__sub {
+    margin: 0;
+    color: #6b7280;
+    line-height: 1.55;
+    max-width: 40rem;
+  }
+
+  .cfp-page-faq__list {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .cfp-page-faq__item {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: var(--cfp-radius);
+    padding: 0 1.15rem;
+  }
+
+  .cfp-page-faq__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.15rem 0;
+    cursor: pointer;
+    list-style: none;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfp-page-faq__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .cfp-page-faq__icon {
+    color: var(--cfp-sage);
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: transform 0.2s ease;
+  }
+
+  .cfp-page-faq__item[open] .cfp-page-faq__icon {
+    transform: rotate(45deg);
+  }
+
+  .cfp-page-faq__answer {
+    padding: 0 0 1.15rem;
+    color: #4b5563;
+    line-height: 1.6;
+  }
+
+  .cfp-page-faq__answer p {
+    margin: 0 0 0.75rem;
+  }
+
+  .cfp-page-faq__cta {
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+
+  .cfp-page-faq__cta p {
+    margin: 0 0 1rem;
+    color: #6b7280;
+  }
+
+  .cfp-page-faq__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.9rem 1.5rem;
+    border-radius: var(--cfp-radius);
+    background: var(--cfp-sage);
+    color: #fff !important;
+    text-decoration: none !important;
+    font-weight: 700;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "FAQ page",
+  "tag": "section",
+  "class": "section-comforsh-page-faq",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Hilfe"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "Frequently asked questions"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Answers about shipping, returns, products and your Comforsh account."
+    },
+    {
+      "type": "checkbox",
+      "id": "open_first",
+      "label": "Open first question",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "cta_text",
+      "label": "CTA text",
+      "default": "Still have questions? We are happy to help."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Kontakt aufnehmen"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "blocks": [
+    {
+      "type": "faq",
+      "name": "FAQ item",
+      "settings": [
+        {
+          "type": "text",
+          "id": "question",
+          "label": "Question",
+          "default": "How long does shipping take?"
+        },
+        {
+          "type": "richtext",
+          "id": "answer",
+          "label": "Answer",
+          "default": "<p>In der Regel 2–4 Werktage innerhalb der EU. Ab €50 versandkostenfrei.</p>"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "FAQ page",
+      "blocks": [
+        {
+          "type": "faq",
+          "settings": {
+            "question": "How long does shipping take?",
+            "answer": "<p>In der Regel 2–4 Werktage innerhalb der EU. Ab €50 versandkostenfrei.</p>"
+          }
+        },
+        {
+          "type": "faq",
+          "settings": {
+            "question": "Can I return a product?",
+            "answer": "<p>Yes, a 30-day money-back guarantee. Just contact us and we will arrange a simple return.</p>"
+          }
+        },
+        {
+          "type": "faq",
+          "settings": {
+            "question": "Sind die Materialien sicher?",
+            "answer": "<p>We use tested, high-quality materials made for daily use. Care instructions are listed on each product page.</p>"
+          }
+        },
+        {
+          "type": "faq",
+          "settings": {
+            "question": "How do I track my order?",
+            "answer": "<p>Sign in to your account to see your order status and shipping details.</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

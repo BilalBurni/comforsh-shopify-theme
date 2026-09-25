@@ -1,0 +1,57 @@
+{%- comment -%}
+  Resolves a product option value to a swatch colour.
+  Outputs a hex string, or nothing when the value is not a colour at all.
+
+  Option values are translated per locale, so the vocabulary has to cover all four
+  storefront languages. Matching is substring-based and ordered most-specific first,
+  so "Dark Blue" wins over "Blue" and "Cojin de asiento rojo" still resolves to red.
+
+  Watch for substrings hiding inside other words: "sage" lives in "massage" and "rot"
+  lives in "protection", so those are matched exactly rather than loosely.
+
+  Usage: {% capture hex %}{% render 'comforsh-swatch-hex', value: value %}{% endcapture %}
+{%- endcomment -%}
+{%- liquid
+  assign v = value | downcase | strip
+  assign hex = ''
+
+  if v contains 'dunkelblau' or v contains 'dark blue' or v contains 'azul oscuro' or v contains 'bleu fonce' or v contains 'bleu foncé' or v contains 'navy' or v contains 'marino'
+    assign hex = '#1e3a8a'
+  elsif v contains 'dunkelgrün' or v contains 'dunkelgruen' or v contains 'dark green' or v contains 'verde oscuro' or v contains 'vert fonce' or v contains 'vert foncé'
+    assign hex = '#14532d'
+  elsif v contains 'weinrot' or v contains 'wine red' or v contains 'rojo vino' or v contains 'bordeaux' or v contains 'burdeos' or v contains 'burgundy'
+    assign hex = '#7f1d1d'
+  elsif v contains 'hellgrau' or v contains 'light gray' or v contains 'light grey' or v contains 'gris claro' or v contains 'gris clair'
+    assign hex = '#d4d6da'
+  elsif v contains 'dunkelgrau' or v contains 'dark gray' or v contains 'dark grey' or v contains 'gris oscuro' or v contains 'gris fonce' or v contains 'gris foncé'
+    assign hex = '#6b7280'
+  elsif v contains 'schwarz' or v contains 'black' or v contains 'blcak' or v contains 'negro' or v contains 'noir'
+    assign hex = '#1f2937'
+  elsif v contains 'weiß' or v contains 'weiss' or v contains 'white' or v contains 'blanco' or v contains 'blanc' or v contains 'ivory' or v contains 'marfil'
+    assign hex = '#f5f5f5'
+  elsif v contains 'silber' or v contains 'silver' or v contains 'plateado' or v contains 'argent' or v contains 'grau' or v contains 'gray' or v contains 'grey' or v contains 'gris'
+    assign hex = '#c5c7cb'
+  elsif v contains 'beige' or v contains 'creme' or v contains 'crème' or v contains 'cream' or v contains 'crema' or v contains 'khaki' or v contains 'caqui'
+    assign hex = '#d6c3a8'
+  elsif v contains 'braun' or v contains 'brown' or v contains 'marrón' or v contains 'marron' or v contains 'brun' or v contains 'coffee' or v contains 'kaffee' or v contains 'café' or v contains 'cafe' or v contains 'mocha' or v contains 'moka'
+    assign hex = '#6b4a32'
+  elsif v contains 'grün' or v contains 'gruen' or v contains 'green' or v contains 'verde' or v contains 'vert' or v contains 'olive' or v contains 'oliva'
+    assign hex = '#2c4a3e'
+  elsif v contains 'blau' or v contains 'blue' or v contains 'azul' or v contains 'bleu'
+    assign hex = '#3b82f6'
+  elsif v contains 'rosa' or v contains 'pink' or v contains 'rose'
+    assign hex = '#ec4899'
+  elsif v contains 'rosé'
+    assign hex = '#e8b4b8'
+  elsif v contains 'lila' or v contains 'violett' or v contains 'violet' or v contains 'purple' or v contains 'morado' or v contains 'púrpura' or v contains 'purpura'
+    assign hex = '#7c3aed'
+  elsif v contains 'gelb' or v contains 'yellow' or v contains 'amarillo' or v contains 'jaune'
+    assign hex = '#eab308'
+  elsif v contains 'orange' or v contains 'naranja'
+    assign hex = '#f97316'
+  elsif v contains 'red' or v contains 'rojo' or v contains 'rouge' or v contains 'dunkelrot' or v contains 'hellrot' or v == 'rot' or v contains ' rot' or v contains 'rot ' or v contains '-rot' or v contains 'rot-' or v contains '/rot' or v contains 'rot/'
+    assign hex = '#b91c1c'
+  endif
+
+  echo hex
+-%}

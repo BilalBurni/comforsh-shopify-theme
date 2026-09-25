@@ -1,0 +1,38 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "comforsh-account",
+      "settings": {
+        "eyebrow": "Kundenkonto",
+        "title": "Konto",
+        "subtitle": "Melden Sie sich an, um Bestellungen zu verfolgen, Adressen zu speichern und schneller zu bestellen.",
+        "login_heading": "Anmelden",
+        "login_text": "Melden Sie sich mit Ihrer E-Mail-Adresse an. Neu hier? Mit derselben Anmeldung wird Ihr Konto automatisch erstellt.",
+        "login_button": "Anmelden / Konto erstellen",
+        "register_hint": "Sie erhalten einen Einmalcode per E-Mail, kein Passwort nötig.",
+        "orders_button": "Zum Kundenkonto",
+        "logout_button": "Abmelden",
+        "benefits_heading": "Ihre Vorteile",
+        "benefit_1": "Bestellstatus jederzeit einsehen",
+        "benefit_2": "Adressen sicher speichern",
+        "benefit_3": "Schnellerer Checkout",
+        "benefit_4": "Persönliche Kaufhistorie",
+        "shop_button": "Jetzt shoppen",
+        "padding_top": 0,
+        "padding_bottom": 80
+      }
+    }
+  },
+  "order": [
+    "main"
+  ]
+}

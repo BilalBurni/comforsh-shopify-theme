@@ -1,0 +1,297 @@
+<section
+  class="cfp-about"
+  style="padding-top: {{ section.settings.padding_top }}px; padding-bottom: {{ section.settings.padding_bottom }}px;"
+>
+  <div class="cfp-about__hero">
+    <div class="page-width cfp-about__hero-inner">
+      {% if section.settings.eyebrow != blank %}
+        <p class="cfp-about__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+      {% endif %}
+      <h1 class="cfp-about__title">{{ section.settings.title | default: 'Über uns' | escape }}</h1>
+      {% if section.settings.subtitle != blank %}
+        <p class="cfp-about__sub">{{ section.settings.subtitle | escape }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="page-width cfp-about__inner">
+    <div class="cfp-about__story">
+      {% if section.settings.story_heading != blank %}
+        <h2 class="cfp-about__heading">{{ section.settings.story_heading | escape }}</h2>
+      {% endif %}
+      {% if section.settings.story_text != blank %}
+        <div class="cfp-about__text">{{ section.settings.story_text }}</div>
+      {% endif %}
+    </div>
+
+    <div class="cfp-about__values">
+      {% if section.settings.value_1_title != blank %}
+        <article class="cfp-about__value">
+          <h3>{{ section.settings.value_1_title | escape }}</h3>
+          <p>{{ section.settings.value_1_text | escape }}</p>
+        </article>
+      {% endif %}
+      {% if section.settings.value_2_title != blank %}
+        <article class="cfp-about__value">
+          <h3>{{ section.settings.value_2_title | escape }}</h3>
+          <p>{{ section.settings.value_2_text | escape }}</p>
+        </article>
+      {% endif %}
+      {% if section.settings.value_3_title != blank %}
+        <article class="cfp-about__value">
+          <h3>{{ section.settings.value_3_title | escape }}</h3>
+          <p>{{ section.settings.value_3_text | escape }}</p>
+        </article>
+      {% endif %}
+    </div>
+
+    {% if section.settings.cta_label != blank %}
+      <div class="cfp-about__cta">
+        <a
+          class="cfp-about__btn"
+          href="{{ section.settings.cta_link | default: routes.all_products_collection_url }}"
+        >
+          {{ section.settings.cta_label | escape }}
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+{% stylesheet %}
+  .cfp-about {
+    background: #faf9f6;
+  }
+
+  .cfp-about__hero {
+    background: linear-gradient(180deg, #eef2f0 0%, #faf9f6 100%);
+    border-bottom: 1px solid #e8e8e8;
+    padding: 3.5rem 0 2.75rem;
+    margin-bottom: 2.75rem;
+  }
+
+  .cfp-about__hero-inner,
+  .cfp-about__inner {
+    max-width: var(--page-width, 1200px);
+    margin-inline: auto;
+    padding-inline: clamp(1.25rem, 4vw, 3rem);
+  }
+
+  .cfp-about__eyebrow {
+    margin: 0 0 0.65rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #822c1d;
+  }
+
+  .cfp-about__title {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #111827;
+  }
+
+  .cfp-about__sub {
+    margin: 0.85rem 0 0;
+    max-width: 42rem;
+    color: #4b5563;
+    font-size: 1.05rem;
+    line-height: 1.55;
+  }
+
+  .cfp-about__story {
+    max-width: 46rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .cfp-about__heading {
+    margin: 0 0 1rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfp-about__text {
+    color: #4b5563;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .cfp-about__text p {
+    margin: 0 0 1rem;
+  }
+
+  .cfp-about__text p:last-child {
+    margin-bottom: 0;
+  }
+
+  .cfp-about__values {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  @media screen and (min-width: 750px) {
+    .cfp-about__values {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+  }
+
+  .cfp-about__value {
+    background: #fff;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+    padding: 1.5rem;
+  }
+
+  .cfp-about__value h3 {
+    margin: 0 0 0.55rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .cfp-about__value p {
+    margin: 0;
+    color: #4b5563;
+    line-height: 1.55;
+    font-size: 0.95rem;
+  }
+
+  .cfp-about__cta {
+    text-align: center;
+  }
+
+  .cfp-about__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.85rem;
+    padding: 0.75rem 1.5rem;
+    background: #822c1d;
+    color: #fff;
+    border-radius: 4px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .cfp-about__btn:hover {
+    background: #6b2317;
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "About page",
+  "tag": "section",
+  "class": "section-comforsh-about",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Our brand"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Title",
+      "default": "About Comforsh"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "Ergonomic comfort for home and office, thoughtfully made and built for everyday use."
+    },
+    {
+      "type": "text",
+      "id": "story_heading",
+      "label": "Story heading",
+      "default": "Komfort, der mitdenkt"
+    },
+    {
+      "type": "richtext",
+      "id": "story_text",
+      "label": "Story text",
+      "default": "<p>Comforsh makes ergonomic products that support your posture and make everyday life easier. From pillows and seat cushions to massage and posture aids, we build solutions for more wellbeing at home and at work.</p><p>We focus on clean design, tested materials and customer service that actually helps.</p>"
+    },
+    {
+      "type": "text",
+      "id": "value_1_title",
+      "label": "Value 1 title",
+      "default": "Ergonomie zuerst"
+    },
+    {
+      "type": "textarea",
+      "id": "value_1_text",
+      "label": "Value 1 text",
+      "default": "Jedes Produkt ist auf Haltung, Entlastung und nachhaltigen Komfort ausgelegt."
+    },
+    {
+      "type": "text",
+      "id": "value_2_title",
+      "label": "Value 2 title",
+      "default": "Alltagstauglich"
+    },
+    {
+      "type": "textarea",
+      "id": "value_2_text",
+      "label": "Value 2 text",
+      "default": "Easy to use, long-lasting and made for real everyday situations."
+    },
+    {
+      "type": "text",
+      "id": "value_3_title",
+      "label": "Value 3 title",
+      "default": "Fairer Service"
+    },
+    {
+      "type": "textarea",
+      "id": "value_3_text",
+      "label": "Value 3 text",
+      "default": "Fast shipping, clear communication and a 30-day money-back guarantee."
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "CTA label",
+      "default": "Produkte entdecken"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "CTA link"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Top padding",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "label": "Bottom padding",
+      "default": 80
+    }
+  ],
+  "presets": [
+    {
+      "name": "About page"
+    }
+  ]
+}
+{% endschema %}
