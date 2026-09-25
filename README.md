@@ -1,6 +1,6 @@
 # Comforsh — Custom Shopify Theme
 
-A custom Shopify Online Store 2.0 theme built from scratch for **Comforsh**, by [Bilal Burney](https://github.com/BilalBurni).
+A customized Shopify Online Store 2.0 theme for **Comforsh**, by [Bilal Burney](https://github.com/BilalBurni).
 
 🔗 **Live store:** [comforsh.com](https://comforsh.com/)
 
@@ -11,7 +11,7 @@ A custom Shopify Online Store 2.0 theme built from scratch for **Comforsh**, by 
 
 ## About this theme
 
-- Built from scratch. No paid or pre-made theme was used as a base.
+- Built on Shopify's free Horizon theme, then customized with custom sections, design and features for this store.
 - Uses Online Store 2.0 JSON templates, so the merchant can edit every section from the theme editor.
 - Responsive layout for mobile, tablet and desktop.
 - Written in Liquid, CSS and vanilla JavaScript.
